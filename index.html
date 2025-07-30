@@ -1,118 +1,130 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Mensagens Anônimas</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    background: #f0f2f5;
-    padding: 20px;
-  }
-  header {
-    display: flex;
-    justify-content: center;
-    gap: 40px;
-    margin-bottom: 20px;
-  }
-  #logos img {
-    height: 80px;
-  }
-  form {
-    max-width: 600px;
-    margin: 0 auto 30px;
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-  }
-  textarea {
-    width: 100%;
-    height: 150px;
-    resize: vertical;
-    padding: 10px;
-    font-size: 16px;
-  }
-  button {
-    width: 100%;
-    padding: 12px;
-    margin-top: 10px;
-    font-size: 16px;
-    background-color: #4CAF50;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-  }
-  #messages {
-    max-width: 600px;
-    margin: 0 auto;
-  }
-  .message {
-    background: #fff;
-    padding: 15px;
-    margin-bottom: 15px;
-    border-radius: 8px;
-    box-shadow: 0 0 8px rgba(0,0,0,0.1);
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Anônimo</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background: #ece5dd;
+    }
+
+    header {
+      background: #075e54;
+      color: white;
+      text-align: center;
+      padding: 15px;
+      font-size: 20px;
+    }
+
+    #chat {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message {
+      background: #dcf8c6;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 10px;
+      max-width: 70%;
+    }
+
+    footer {
+      display: flex;
+      padding: 10px;
+      background: #f0f0f0;
+    }
+
+    input {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 20px;
+      border: none;
+      outline: none;
+    }
+
+    button {
+      margin-left: 10px;
+      padding: 10px 15px;
+      font-size: 16px;
+      background: #075e54;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
 
-<header id="logos">
-  <!-- Substitua pelos seus logos -->
-  <img src="logo1.png" alt="Logo 1" />
-  <img src="logo2.png" alt="Logo 2" />
-</header>
+  <header>Chat Anônimo</header>
 
-<form id="messageForm">
-  <textarea id="messageInput" placeholder="Digite sua mensagem anônima..."></textarea>
-  <button type="submit">Enviar</button>
-</form>
+  <div id="chat"></div>
 
-<div id="messages">
-  <h2>Mensagens Recentes</h2>
-  <!-- mensagens aparecerão aqui -->
-</div>
+  <footer>
+    <input type="text" id="messageInput" placeholder="Digite sua mensagem...">
+    <button onclick="sendMessage()">Enviar</button>
+  </footer>
 
-<script>
-  const form = document.getElementById('messageForm');
-  const messageInput = document.getElementById('messageInput');
-  const messagesDiv = document.getElementById('messages');
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const msg = messageInput.value.trim();
-    if (msg !== '') {
-      fetch('http://localhost:3000/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: msg }),
-      })
-      .then(res => res.json())
-      .then(data => {
-        messageInput.value = '';
-        loadMessages();
+  <script>
+    // 🔄 SUBSTITUA aqui pelas suas credenciais do Firebase
+    const firebaseConfig = {
+  apiKey: "AIzaSyD8HpvX2scRrV2Yhh_V8B3QMZIRwyR8gak",
+  authDomain: "chatanonimo-d1676.firebaseapp.com",
+  databaseURL: "https://chatanonimo-d1676-default-rtdb.firebaseio.com",
+  projectId: "chatanonimo-d1676",
+  storageBucket: "chatanonimo-d1676.firebasestorage.app",
+  messagingSenderId: "951790566544",
+  appId: "1:951790566544:web:4687d205d4673be5636c15",
+  measurementId: "G-XGGHD7E1TB"
+};
+    // Inicializa Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const chat = document.getElementById("chat");
+    const input = document.getElementById("messageInput");
+
+    function sendMessage() {
+      const text = input.value.trim();
+      if (text === "") return;
+
+      db.ref("messages").push({
+        text: text,
+        timestamp: Date.now()
       });
+
+      input.value = "";
     }
-  });
 
-  function loadMessages() {
-    fetch('http://localhost:3000/messages')
-      .then(res => res.json())
-      .then(data => {
-        messagesDiv.innerHTML = '<h2>Mensagens Recentes</h2>';
-        data.forEach(msg => {
-          const div = document.createElement('div');
-          div.className = 'message';
-          div.textContent = msg.message;
-          messagesDiv.appendChild(div);
-        });
-      });
-  }
+    // Enviar com Enter
+    input.addEventListener("keypress", function(e) {
+      if (e.key === "Enter") sendMessage();
+    });
 
-  // Carregar mensagens ao abrir
-  loadMessages();
-</script>
-
+    // Atualizar chat em tempo real
+    db.ref("messages").on("child_added", function(snapshot) {
+      const msg = snapshot.val();
+      const div = document.createElement("div");
+      div.className = "message";
+      div.textContent = msg.text;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    });
+  </script>
 </body>
 </html>
