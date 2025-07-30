@@ -1,111 +1,117 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mensagens Anônimas</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f2f5;
-            margin: 0;
-            padding: 20px;
-        }
-        header {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 40px;
-            margin-bottom: 30px;
-        }
-        .logo {
-            height: 80px;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .logo:hover {
-            transform: scale(1.05);
-        }
-        form {
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        textarea {
-            width: 100%;
-            height: 150px;
-            resize: vertical;
-            padding: 10px;
-            font-size: 16px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            margin-bottom: 15px;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            font-size: 16px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .messages {
-            max-width: 600px;
-            margin: 40px auto 0;
-        }
-        .message {
-            background-color: #fff;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            box-shadow: 0 0 8px rgba(0,0,0,0.1);
-            font-size: 16px;
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Mensagens Anônimas</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f0f2f5;
+    padding: 20px;
+  }
+  header {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 20px;
+  }
+  #logos img {
+    height: 80px;
+  }
+  form {
+    max-width: 600px;
+    margin: 0 auto 30px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+  }
+  textarea {
+    width: 100%;
+    height: 150px;
+    resize: vertical;
+    padding: 10px;
+    font-size: 16px;
+  }
+  button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    font-size: 16px;
+    background-color: #4CAF50;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+  }
+  #messages {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .message {
+    background: #fff;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+  }
+</style>
 </head>
 <body>
 
-<header>
-    <!-- Substitua os src pelas URLs das suas logos -->
-    <img src="logo1.png" alt="Logo 1" class="logo" />
-    <img src="logo2.png" alt="Logo 2" class="logo" />
+<header id="logos">
+  <!-- Substitua pelos seus logos -->
+  <img src="logo1.png" alt="Logo 1" />
+  <img src="logo2.png" alt="Logo 2" />
 </header>
 
 <form id="messageForm">
-    <textarea id="messageInput" placeholder="Digite sua mensagem anônima..."></textarea>
-    <button type="submit">Enviar</button>
+  <textarea id="messageInput" placeholder="Digite sua mensagem anônima..."></textarea>
+  <button type="submit">Enviar</button>
 </form>
 
-<div class="messages" id="messagesContainer">
-    <!-- Mensagens enviadas aparecerão aqui -->
+<div id="messages">
+  <h2>Mensagens Recentes</h2>
+  <!-- mensagens aparecerão aqui -->
 </div>
 
 <script>
-    const form = document.getElementById('messageForm');
-    const messageInput = document.getElementById('messageInput');
-    const messagesContainer = document.getElementById('messagesContainer');
+  const form = document.getElementById('messageForm');
+  const messageInput = document.getElementById('messageInput');
+  const messagesDiv = document.getElementById('messages');
 
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const messageText = messageInput.value.trim();
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const msg = messageInput.value.trim();
+    if (msg !== '') {
+      fetch('http://localhost:3000/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: msg }),
+      })
+      .then(res => res.json())
+      .then(data => {
+        messageInput.value = '';
+        loadMessages();
+      });
+    }
+  });
 
-        if (messageText !== '') {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message';
-            messageDiv.textContent = messageText;
-            messagesContainer.insertBefore(messageDiv, messagesContainer.firstChild);
-            messageInput.value = '';
-        }
-    });
+  function loadMessages() {
+    fetch('http://localhost:3000/messages')
+      .then(res => res.json())
+      .then(data => {
+        messagesDiv.innerHTML = '<h2>Mensagens Recentes</h2>';
+        data.forEach(msg => {
+          const div = document.createElement('div');
+          div.className = 'message';
+          div.textContent = msg.message;
+          messagesDiv.appendChild(div);
+        });
+      });
+  }
+
+  // Carregar mensagens ao abrir
+  loadMessages();
 </script>
 
 </body>
