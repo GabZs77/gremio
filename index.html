@@ -224,13 +224,6 @@
         confirm.style.color = "red";
         return;
       }
-
-      confirm.innerText = "Mensagem enviada!";
-      confirm.style.color = "green";
-      input.value = " ";
-    }
-  </script>
-  
       const remetente = isADM ? `ADM: ${nomeADM.toUpperCase()}` : nomeUsuario;
       db.ref("mensagens").push({ nome: remetente, texto, adm: isADM });
       input.value = "";
