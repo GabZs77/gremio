@@ -1,228 +1,250 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Bate-papo</title>
+  <title>Sugestões</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #101010;
-      color: white;
       margin: 0;
-      padding: 0;
+      font-family: sans-serif;
+      background-color: #ece5dd;
     }
-
-    #chat {
-      max-width: 600px;
-      margin: 20px auto;
-      padding: 10px;
-      background-color: #1c1c1c;
-      border-radius: 10px;
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
     }
-
-    #mensagens {
-      max-height: 300px;
+    .header {
+      background-color: #075e54;
+      color: white;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header h2 {
+      margin: 0;
+    }
+    .messages {
+      flex: 1;
       overflow-y: auto;
-      margin-bottom: 10px;
+      padding: 10px;
+      background-color: #e5ddd5;
     }
-
-    .mensagem {
-      background-color: #2a2a2a;
-      padding: 8px;
-      margin: 5px 0;
+    .message {
+      background-color: #dcf8c6;
+      margin: 10px 0;
+      padding: 10px;
       border-radius: 5px;
       position: relative;
     }
-
-    .mensagem .autor {
+    .username {
       font-weight: bold;
-      margin-bottom: 5px;
+      font-size: 14px;
+      margin-bottom: 4px;
     }
-
     .delete-btn {
       position: absolute;
-      top: 5px;
-      right: 10px;
-      background-color: red;
+      top: 4px;
+      right: 4px;
+      background: red;
       border: none;
       color: white;
-      padding: 3px 6px;
       border-radius: 3px;
       cursor: pointer;
+      font-size: 12px;
+      padding: 2px 4px;
       display: none;
     }
-
-    .mensagem.adm .delete-btn {
-      display: inline-block;
-    }
-
-    input, button {
+    .input-section {
       padding: 10px;
-      margin: 5px 0;
+      background-color: #f0f0f0;
+    }
+    textarea {
       width: 100%;
-      border-radius: 5px;
+      padding: 10px;
+      font-size: 16px;
+      resize: none;
+      border-radius: 6px;
+    }
+    .send-btn {
+      margin-top: 8px;
+      width: 100%;
+      padding: 10px;
+      background-color: #25d366;
       border: none;
-    }
-
-    button {
-      background-color: #4CAF50;
       color: white;
+      font-size: 16px;
       cursor: pointer;
+      border-radius: 6px;
     }
-
-    #loginAdm, #logoutAdm {
-      background-color: #333;
+    .notification {
+      text-align: center;
+      background-color: #cce5ff;
+      color: #004085;
+      padding: 8px;
+      font-size: 14px;
+    }
+    .adm-login-btn {
+      background-color: #128c7e;
       color: white;
-      margin-top: 10px;
+      border: none;
+      padding: 6px 10px;
+      cursor: pointer;
+      border-radius: 4px;
     }
-
-    #nameInputDiv {
-      background-color: rgba(0, 0, 0, 0.9);
+    .login-modal {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      display: flex;
-      align-items: center;
+      background-color: rgba(0,0,0,0.5);
+      display: none;
       justify-content: center;
+      align-items: center;
     }
-
-    #nameInputDiv input, #nameInputDiv button {
-      width: auto;
-      margin: 5px;
+    .login-box {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      position: relative;
+      width: 300px;
+    }
+    .login-box input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 6px;
+      margin-bottom: 10px;
+    }
+    .close-login {
+      position: absolute;
+      top: 6px;
+      right: 10px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .confirm-msg {
+      margin-top: 5px;
+      text-align: center;
+      color: green;
     }
   </style>
 </head>
 <body>
-  <div id="nameInputDiv">
-    <div>
-      <h3>Coloque seu nome:</h3>
-      <input type="text" id="nameInput" placeholder="Seu nome" />
-      <button id="confirmName">Confirmar</button>
+  <div class="chat-container">
+    <div class="header">
+      <h2>Caixa de Sugestões</h2>
+      <button class="adm-login-btn" onclick="openLogin()">Login ADM</button>
+    </div>
+    <div id="notification" class="notification">Sua mensagem é 100% anônima e não será rastreada.</div>
+    <div class="messages" id="messages"></div>
+    <div class="input-section">
+      <textarea id="messageInput" rows="4" placeholder="Digite sua sugestão..."></textarea>
+      <button class="send-btn" onclick="enviarMensagem()">Enviar Sugestão</button>
+      <div class="confirm-msg" id="confirmMsg"></div>
     </div>
   </div>
 
-  <div id="chat" style="display: none;">
-    <div id="mensagens"></div>
-    <input type="text" id="mensagemInput" placeholder="Digite sua mensagem" />
-    <button id="enviarBtn">Enviar</button>
-
-    <input type="password" id="senhaAdm" placeholder="Senha de ADM" />
-    <button id="loginAdm">Login ADM</button>
-    <button id="logoutAdm">Sair do ADM</button>
+  <div class="login-modal" id="loginModal">
+    <div class="login-box">
+      <span class="close-login" onclick="closeLogin()">❌</span>
+      <h3>Login ADM</h3>
+      <input type="text" id="admUser" placeholder="Usuário">
+      <input type="password" id="admPass" placeholder="Senha">
+      <button onclick="loginADM()">Entrar</button>
+    </div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script>
-    // 🔥 Firebase
-    const firebaseConfig = {
-      apiKey: "SUA_API_KEY",
-      authDomain: "SEU_DOMINIO.firebaseapp.com",
-      projectId: "SEU_PROJETO",
-      storageBucket: "SEU_PROJETO.appspot.com",
-      messagingSenderId: "0000000000",
-      appId: "APP_ID"
+    let nomeUsuario = "";
+    let isADM = false;
+    const mensagens = [];
+
+    window.onload = () => {
+      const nome = prompt("Coloque seu nome (ou deixe em branco para anônimo):");
+      nomeUsuario = nome ? nome : "Anônimo";
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    const mensagensDiv = document.getElementById("mensagens");
-    const mensagemInput = document.getElementById("mensagemInput");
-    const enviarBtn = document.getElementById("enviarBtn");
-    const loginAdmBtn = document.getElementById("loginAdm");
-    const logoutAdmBtn = document.getElementById("logoutAdm");
-
-    const nameInputDiv = document.getElementById("nameInputDiv");
-    const confirmNameBtn = document.getElementById("confirmName");
-
-    let userName = "Anônimo";
-    let loggedADMs = [];
-
-    const adms = {
-      "Gabriel": "1234",
-      "Admin": "senha"
-    };
-
-    confirmNameBtn.onclick = () => {
-      const nomeDigitado = document.getElementById("nameInput").value.trim();
-      if (nomeDigitado) {
-        userName = nomeDigitado;
-        nameInputDiv.style.display = "none";
-        document.getElementById("chat").style.display = "block";
-        alert(`Bem-vindo, ${userName}`);
-      }
-    };
-
-    enviarBtn.onclick = () => {
-      const texto = mensagemInput.value.trim();
-      if (texto) {
-        db.ref("mensagens").push({
-          autor: userName,
-          texto: texto
-        });
-        mensagemInput.value = "";
-      }
-    };
-
-    function atualizarMensagens(snapshot) {
-      mensagensDiv.innerHTML = "";
-      snapshot.forEach(child => {
-        const key = child.key;
-        const dados = child.val();
-
-        const div = document.createElement("div");
-        div.classList.add("mensagem");
-        if (loggedADMs.includes(userName)) {
-          div.classList.add("adm");
-        }
-
-        const autor = document.createElement("div");
-        autor.className = "autor";
-        autor.textContent = dados.autor;
-        div.appendChild(autor);
-
-        const texto = document.createElement("div");
-        texto.textContent = dados.texto;
-        div.appendChild(texto);
-
-        // Botão de apagar visível só para ADM logado
-        if (adms[userName] && loggedADMs.includes(userName)) {
-          const delBtn = document.createElement("button");
-          delBtn.className = "delete-btn";
-          delBtn.textContent = "Apagar";
-          delBtn.onclick = () => {
-            if (confirm("Deseja apagar esta mensagem?")) {
-              db.ref("mensagens/" + key).remove();
-            }
-          };
-          div.appendChild(delBtn);
-        }
-
-        mensagensDiv.appendChild(div);
-      });
+    function contemPalavroes(texto) {
+      const lista = ["palavrão", "idiota", "burro", "merda", "desgraça", "fdp", "viado", "bosta", "porra"];
+      const txt = texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/gi, "");
+      return lista.some(p => txt.includes(p));
     }
 
-    db.ref("mensagens").on("value", atualizarMensagens);
+    function enviarMensagem() {
+      const input = document.getElementById("messageInput");
+      const texto = input.value.trim();
+      const confirm = document.getElementById("confirmMsg");
 
-    loginAdmBtn.onclick = () => {
-      const senha = document.getElementById("senhaAdm").value;
-      if (adms[userName] && adms[userName] === senha) {
-        if (!loggedADMs.includes(userName)) {
-          loggedADMs.push(userName);
-        }
-        alert(`Você fez login como ${userName}`);
-        atualizarMensagens({ forEach: db.ref("mensagens").once("value").then(snap => atualizarMensagens(snap)) });
-      } else {
-        alert("Senha incorreta ou usuário não registrado como ADM.");
+      if (!texto) return;
+
+      if (contemPalavroes(texto)) {
+        confirm.innerText = "Por favor, não use palavrões.";
+        confirm.style.color = "red";
+        return;
       }
-    };
 
-    logoutAdmBtn.onclick = () => {
-      loggedADMs = loggedADMs.filter(adm => adm !== userName);
-      alert("Você saiu do modo ADM.");
-      db.ref("mensagens").once("value").then(atualizarMensagens);
-    };
+      mensagens.push({ nome: nomeUsuario, texto });
+      input.value = "";
+      confirm.innerText = "Mensagem enviada com sucesso!";
+      confirm.style.color = "green";
+      mostrarMensagens();
+    }
+
+    function mostrarMensagens() {
+      const container = document.getElementById("messages");
+      container.innerHTML = "";
+
+      mensagens.forEach((msg, index) => {
+        const div = document.createElement("div");
+        div.className = "message";
+
+        const user = document.createElement("div");
+        user.className = "username";
+        user.textContent = msg.nome;
+
+        const texto = document.createElement("div");
+        texto.textContent = msg.texto;
+
+        if (isADM) {
+          const btn = document.createElement("button");
+          btn.className = "delete-btn";
+          btn.textContent = "Apagar";
+          btn.onclick = () => {
+            mensagens.splice(index, 1);
+            mostrarMensagens();
+          };
+          btn.style.display = "block";
+          div.appendChild(btn);
+        }
+
+        div.appendChild(user);
+        div.appendChild(texto);
+        container.appendChild(div);
+      });
+
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function openLogin() {
+      document.getElementById("loginModal").style.display = "flex";
+    }
+
+    function closeLogin() {
+      document.getElementById("loginModal").style.display = "none";
+    }
+
+    function loginADM() {
+      const u = document.getElementById("admUser").value;
+      const p = document.getElementById("admPass").value;
+      if (u === "admin" && p === "1234") {
+        isADM = true;
+        alert("Você fez login com " + u);
+        closeLogin();
+        mostrarMensagens();
+      } else {
+        alert("Usuário ou senha incorretos.");
+      }
+    }
   </script>
 </body>
 </html>
