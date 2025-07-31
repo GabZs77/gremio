@@ -2,39 +2,43 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sugestões</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Caixa de Sugestões</title>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <style>
-    body {
+    * {
       margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
       font-family: 'Segoe UI', sans-serif;
-      background-image: url('https://cdn.discordapp.com/attachments/1348355429985681574/1400587439449313341/IMG-20250731-WA0682.jpg?ex=688d2e33&is=688bdcb3&hm=2c2699b21ead97b521e57ad50159940b203f5494a4b929d28d7216cf3e27df59&');
+      background: url('https://cdn.discordapp.com/attachments/1348355429985681574/1400587439449313341/IMG-20250731-WA0682.jpg?ex=688d2e33&is=688bdcb3&hm=2c2699b21ead97b521e57ad50159940b203f5494a4b929d28d7216cf3e27df59&') no-repeat center center fixed;
       background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      background-attachment: fixed;
-      transition: background-color 0.5s ease;
     }
 
     .background-overlay {
       position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.4);
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
       z-index: -1;
     }
 
     .chat-container {
-      background-color: rgba(255, 255, 255, 0.85);
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.2);
-      margin: 20px auto;
-      max-width: 800px;
-      height: calc(100vh - 40px);
       display: flex;
       flex-direction: column;
+      max-width: 800px;
+      height: 100%;
+      margin: auto;
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 12px;
       overflow: hidden;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
     }
 
     .header {
@@ -44,13 +48,6 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-top-left-radius: 12px;
-      border-top-right-radius: 12px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    }
-
-    .header h2 {
-      margin: 0;
     }
 
     .messages {
@@ -61,30 +58,21 @@
     }
 
     .message {
+      background-color: #dcf8c6;
       margin: 10px 0;
       padding: 10px;
       border-radius: 8px;
       position: relative;
       animation: fadeIn 0.5s ease;
-      transition: transform 0.2s ease;
-    }
-
-    .message:hover {
-      transform: scale(1.02);
     }
 
     .message.adm {
       background-color: #d0e7ff;
     }
 
-    .message:not(.adm) {
-      background-color: #dcf8c6;
-    }
-
     .username {
       font-weight: bold;
       font-size: 14px;
-      margin-bottom: 4px;
     }
 
     .delete-btn {
@@ -92,31 +80,27 @@
       top: 4px;
       right: 4px;
       background: red;
-      border: none;
       color: white;
+      border: none;
       border-radius: 3px;
       cursor: pointer;
       font-size: 12px;
-      padding: 2px 4px;
+      padding: 2px 6px;
     }
 
     .input-section {
       padding: 10px;
-      background-color: #f0f0f0;
+      background: #f0f0f0;
     }
 
     textarea {
       width: 100%;
       padding: 10px;
       font-size: 16px;
-      resize: none;
       border-radius: 6px;
-      transition: box-shadow 0.3s ease;
-    }
-
-    textarea:focus {
+      resize: none;
+      border: none;
       outline: none;
-      box-shadow: 0 0 5px #25d366;
     }
 
     .send-btn {
@@ -124,12 +108,11 @@
       width: 100%;
       padding: 10px;
       background-color: #25d366;
-      border: none;
       color: white;
       font-size: 16px;
-      cursor: pointer;
+      border: none;
       border-radius: 6px;
-      transition: background-color 0.3s ease;
+      cursor: pointer;
     }
 
     .send-btn:hover {
@@ -140,7 +123,7 @@
       text-align: center;
       background-color: #cce5ff;
       color: #004085;
-      padding: 8px;
+      padding: 6px;
       font-size: 14px;
     }
 
@@ -149,44 +132,43 @@
       color: white;
       border: none;
       padding: 6px 10px;
-      cursor: pointer;
       border-radius: 4px;
+      cursor: pointer;
     }
 
     .login-modal {
       position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-color: rgba(0,0,0,0.5);
+      inset: 0;
+      background: rgba(0,0,0,0.5);
       display: none;
       justify-content: center;
       align-items: center;
     }
 
     .login-box {
-      background-color: white;
+      background: white;
       padding: 20px;
       border-radius: 8px;
+      width: 280px;
       position: relative;
-      width: 300px;
     }
 
     .login-box input {
       width: 100%;
       padding: 8px;
-      margin-top: 6px;
-      margin-bottom: 10px;
+      margin: 6px 0;
     }
 
     .close-login {
       position: absolute;
-      top: 6px;
-      right: 10px;
-      font-weight: bold;
+      top: 8px;
+      right: 12px;
       cursor: pointer;
+      font-size: 16px;
     }
 
     .confirm-msg {
-      margin-top: 5px;
+      margin-top: 6px;
       text-align: center;
       color: green;
     }
@@ -195,63 +177,19 @@
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-
-    /* Modo escuro */
-    body.dark-mode .chat-container {
-      background-color: rgba(30, 30, 30, 0.85);
-    }
-
-    body.dark-mode .messages {
-      background-color: #2c2c2c;
-    }
-
-    body.dark-mode .message.adm {
-      background-color: #3a5f7d;
-    }
-
-    body.dark-mode .message:not(.adm) {
-      background-color: #3d4f3d;
-    }
-
-    body.dark-mode .input-section {
-      background-color: #444;
-    }
-
-    body.dark-mode textarea {
-      background-color: #555;
-      color: white;
-    }
-
-    body.dark-mode .send-btn {
-      background-color: #1ebe5d;
-    }
-
-    body.dark-mode .notification {
-      background-color: #333;
-      color: #ccc;
-    }
-
-    body.dark-mode .login-box {
-      background-color: #222;
-      color: white;
-    }
-
-    body.dark-mode .adm-login-btn {
-      background-color: #1c8c7e;
-    }
   </style>
 </head>
 <body>
   <div class="background-overlay"></div>
   <div class="chat-container">
     <div class="header">
-      <h2>Caixa de Sugestões Para Melhorias na Escola</h2>
+      <h2>Caixa de Sugestões da Escola</h2>
       <button class="adm-login-btn" onclick="alternarLogin()">Login ADM</button>
     </div>
     <div id="notification" class="notification"></div>
     <div class="messages" id="messages"></div>
     <div class="input-section">
-      <textarea id="messageInput" rows="4" placeholder="Digite sua sugestão..."></textarea>
+      <textarea id="messageInput" rows="3" placeholder="Digite sua sugestão..."></textarea>
       <button class="send-btn" onclick="enviarMensagem()">Enviar Sugestão</button>
       <div class="confirm-msg" id="confirmMsg"></div>
     </div>
@@ -282,9 +220,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let nomeUsuario = "";
-    let isADM = false;
-    let nomeADM = "";
+    let nomeUsuario = "", isADM = false, nomeADM = "";
 
     const admCredenciais = {
       "Gabriel": "10022010",
@@ -292,65 +228,53 @@
       "Gremio": "GremioEstudantilADM"
     };
 
-    // 🌙 Modo escuro automático baseado no horário
     function aplicarModoEscuroAutomatico() {
-      const hora = new Date().getHours();
-      if (hora >= 18 || hora < 6) {
-        document.body.classList.add("dark-mode");
-      }
+      const h = new Date().getHours();
+      if (h >= 18 || h < 6) document.body.classList.add("dark-mode");
     }
 
     window.onload = () => {
       aplicarModoEscuroAutomatico();
       const nome = prompt("Coloque seu nome (ou deixe em branco para anônimo):");
-      nomeUsuario = nome ? nome : "Anônimo";
-      document.getElementById("notification").textContent = `Olá ${nomeUsuario}! Compartilhe conosco sua ideia ou sugestão :)`;
+      nomeUsuario = nome || "Anônimo";
+      document.getElementById("notification").textContent = `Olá ${nomeUsuario}! Compartilhe sua sugestão abaixo.`;
       carregarMensagens();
     };
 
     function contemPalavroes(texto) {
-      const lista = ["palavrão", "idiota", "burro", "merda", "desgraça", "fdp", "viado", "bosta", "porra"];
-      const txt = texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/gi, "");
-      return lista.some(p => txt.includes(p));
+      const palavras = ["palavrão", "idiota", "burro", "merda", "desgraça", "fdp", "viado", "bosta", "porra"];
+      const normalizado = texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/gi, "");
+      return palavras.some(p => normalizado.includes(p));
     }
 
     function enviarMensagem() {
       const input = document.getElementById("messageInput");
       const texto = input.value.trim();
       const confirm = document.getElementById("confirmMsg");
-
       if (!texto) return;
 
       if (contemPalavroes(texto)) {
-        confirm.innerText = "Por favor, não use palavrões.";
+        confirm.innerText = "Por favor, evite palavrões.";
         confirm.style.color = "red";
         return;
       }
 
       const remetente = isADM ? `ADM: ${nomeADM.toUpperCase()}` : nomeUsuario;
-      const novaMsg = {
-        nome: remetente,
-        texto: texto,
-        adm: isADM
-      };
-
-      db.ref("mensagens").push(novaMsg);
+      db.ref("mensagens").push({ nome: remetente, texto, adm: isADM });
       input.value = "";
       confirm.innerText = "Mensagem enviada com sucesso!";
       confirm.style.color = "green";
     }
 
     function carregarMensagens() {
-      db.ref("mensagens").on("value", snapshot => {
+      db.ref("mensagens").on("value", snap => {
         const container = document.getElementById("messages");
         container.innerHTML = "";
-        const dados = snapshot.val();
-
+        const dados = snap.val();
         for (let id in dados) {
           const msg = dados[id];
           const div = document.createElement("div");
-          div.className = "message";
-          if (msg.adm) div.classList.add("adm");
+          div.className = "message" + (msg.adm ? " adm" : "");
 
           const user = document.createElement("div");
           user.className = "username";
@@ -372,7 +296,6 @@
 
           container.appendChild(div);
         }
-
         container.scrollTop = container.scrollHeight;
       });
     }
@@ -388,16 +311,15 @@
     function loginADM() {
       const user = document.getElementById("admUser").value.trim();
       const pass = document.getElementById("admPass").value.trim();
-
-      if (admCredenciais[user] && admCredenciais[user] === pass) {
+      if (admCredenciais[user] === pass) {
         isADM = true;
         nomeADM = user;
         fecharLogin();
-        alert(`Login ADM realizado com sucesso como: ${nomeADM}`);
+        alert(`Logado como ${nomeADM}`);
         document.querySelector(".adm-login-btn").textContent = "Sair do Login ADM";
         carregarMensagens();
       } else {
-        alert("Credenciais inválidas.");
+        alert("Credenciais incorretas.");
       }
     }
 
@@ -409,11 +331,7 @@
     }
 
     function alternarLogin() {
-      if (isADM) {
-        logoutADM();
-      } else {
-        abrirLogin();
-      }
+      isADM ? logoutADM() : abrirLogin();
     }
   </script>
 </body>
