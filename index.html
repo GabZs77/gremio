@@ -1,220 +1,289 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Caixa de Sugestões</title>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      font-family: Arial, sans-serif;
-      background-image: url('https://cdn.discordapp.com/attachments/1348355429985681574/1400587439449313341/IMG-20250731-WA0682.jpg?ex=688d2e33&is=688bdcb3&hm=2c2699b21ead97b521e57ad50159940b203f5494a4b929d28d7216cf3e27df59&');
-      background-size: cover;
-      background-position: center;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    .container {
-      background-color: rgba(255, 255, 255, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 10px;
-      padding: 30px;
-      max-width: 500px;
-      width: 100%;
-      backdrop-filter: blur(12px);
-      color: white;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-    }
-    h1 {
-      font-size: 24px;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    textarea {
-      width: 100%;
-      height: 100px;
-      border: none;
-      border-radius: 8px;
-      padding: 10px;
-      resize: none;
-      font-size: 16px;
-      background-color: rgba(255, 255, 255, 0.1);
-      color: white;
-      outline: none;
-    }
-    button {
-      width: 100%;
-      margin-top: 15px;
-      padding: 10px;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-      background-color: rgba(255, 255, 255, 0.2);
-      color: white;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    button:hover {
-      background-color: rgba(255, 255, 255, 0.3);
-    }
-    #confirmMsg {
-      margin-top: 10px;
-      font-size: 14px;
-      text-align: center;
-    }
-  </style></head>
-<body>
-  <div class="background-overlay"></div>
-  <div class="chat-container">
-    <div class="header">
-      <h2>Caixa de Sugestões da Escola</h2>
-      <button class="adm-login-btn" onclick="alternarLogin()">Login ADM</button>
-    </div>
-    <div id="notification" class="notification"></div>
-    <div class="messages" id="messages"></div>
-    <div class="input-section">
-      <textarea id="messageInput" rows="3" placeholder="Digite sua sugestão..."></textarea>
-      <button class="send-btn" onclick="enviarMensagem()">Enviar Sugestão</button>
-      <div class="confirm-msg" id="confirmMsg"></div>
-    </div>
-  </div>
-  <div class="login-modal" id="loginModal">
-    <div class="login-box">
-      <span class="close-login" onclick="fecharLogin()">❌</span>
-      <h3>Login ADM</h3>
-      <input type="text" id="admUser" placeholder="Usuário">
-      <input type="password" id="admPass" placeholder="Senha">
-      <button onclick="loginADM()">Entrar</button>
-    </div>
-  </div>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyD8HpvX2scRrV2Yhh_V8B3QMZIRwyR8gak",
-      authDomain: "chatanonimo-d1676.firebaseapp.com",
-      databaseURL: "https://chatanonimo-d1676-default-rtdb.firebaseio.com",
-      projectId: "chatanonimo-d1676",
-      storageBucket: "chatanonimo-d1676.appspot.com",
-      messagingSenderId: "951790566544",
-      appId: "1:951790566544:web:4687d205d4673be5636c15",
-      measurementId: "G-XGGHD7E1TB"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    let nomeUsuario = "", isADM = false, nomeADM = "";
-    const admCredenciais = {
-      "Gabriel": "10022010",
-      "Parana": "02062010",
-      "Gremio": "GremioEstudantilADM"
-    };
-    function aplicarModoEscuroAutomatico() {
-      const h = new Date().getHours();
-      if (h >= 18 || h < 6) document.body.classList.add("dark-mode");
-    }
-    window.onload = () => {
-      aplicarModoEscuroAutomatico();
-      const nome = prompt("Coloque seu nome (ou deixe em branco para anônimo):");
-      nomeUsuario = nome || "Anônimo";
-      document.getElementById("notification").textContent = `Olá ${nomeUsuario}! Compartilhe sua sugestão abaixo.`;
-      carregarMensagens();
-    };
-    function contemPalavroes(texto) {
-      const palavras = [
-        "idiota", "burro", "merda", "desgraca", "fdp", "viado", "bosta", "porra",
-        "puta", "caralho", "burra", "bct", "lazarento", "corno", "corna", "sexo",
-        "putaria", "puto", "chifrudo", "mae", "pai", "pinto", "pal", "penis",
-        "buceta", "vai se fuder", "tesao", "pelada", "xxx", "porno"
-      ];
-      const normalizado = texto
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
-      return palavras.some(p => normalizado.includes(p));
-    }
-    function enviarMensagem() {
-      const input = document.getElementById("messageInput");
-      const texto = input.value.trim();
-      const confirm = document.getElementById("confirmMsg");
+<!DOCTYPE html>  <html lang="pt-BR">  
+<head>  
+  <meta charset="UTF-8" />  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />  
+  <title>Caixa de Sugestões</title>  
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>  
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>  
+  <style>  
+    * {  
+      margin: 0;  
+      padding: 0;  
+      box-sizing: border-box;  
+    }  
+    html, body {  
+      height: 100%;  
+      font-family: 'Segoe UI', sans-serif;  
+      background: url('https://i.postimg.cc/ZnrsPtxB/IMG-20250731-WA0682.jpg') no-repeat center center fixed;  
+      background-size: cover;  
+    }  
+    .background-overlay {  
+      position: fixed;  
+      inset: 0;  
+      background: transparent;  
+      z-index: -1;  
+    }  
+    .chat-container {  
+      display: flex;  
+      flex-direction: column;  
+      height: 100%;  
+      width: 100%;  
+      background: rgba(0, 0, 0, 0.5;  
+    }  
+    .header {  
+      background: linear-gradient(90deg, #075e54, #128c7e);  
+      color: white;  
+      padding: 15px;  
+      display: flex;  
+      justify-content: space-between;  
+      align-items: center;  
+    }  
+    .messages {  
+      flex: 1;  
+      overflow-y: auto;  
+      padding: 10px;  
+      background-color: #e5ddd5;  
+    }  
+    .message {  
+      background-color: #dcf8c6;  
+      margin: 10px 0;  
+      padding: 10px;  
+      border-radius: 8px;  
+      position: relative;  
+      animation: fadeIn 0.5s ease;  
+    }  
+    .message.adm {  
+      background-color: #d0e7ff;  
+    }  
+    .username {  
+      font-weight: bold;  
+      font-size: 14px;  
+    }  
+    .delete-btn {  
+      position: absolute;  
+      top: 4px;  
+      right: 4px;  
+      background: red;  
+      color: white;  
+      border: none;  
+      border-radius: 3px;  
+      cursor: pointer;  
+      font-size: 12px;  
+      padding: 2px 6px;  
+    }  
+    .input-section {  
+      padding: 10px;  
+      background: #f0f0f0;  
+    }  
+    textarea {  
+      width: 100%;  
+      padding: 10px;  
+      font-size: 16px;  
+      border-radius: 6px;  
+      resize: none;  
+      border: none;  
+      outline: none;  
+    }  
+    .send-btn {  
+      margin-top: 8px;  
+      width: 100%;  
+      padding: 10px;  
+      background-color: #25d366;  
+      color: white;  
+      font-size: 16px;  
+      border: none;  
+      border-radius: 6px;  
+      cursor: pointer;  
+    }  
+    .send-btn:hover {  
+      background-color: #1ebe5d;  
+    }  
+    .notification {  
+      text-align: center;  
+      background-color: #cce5ff;  
+      color: #004085;  
+      padding: 6px;  
+      font-size: 14px;  
+    }  
+    .adm-login-btn {  
+      background-color: #128c7e;  
+      color: white;  
+      border: none;  
+      padding: 6px 10px;  
+      border-radius: 4px;  
+      cursor: pointer;  
+    }  
+    .login-modal {  
+      position: fixed;  
+      inset: 0;  
+      background: rgba(0,0,0,0.5);  
+      display: none;  
+      justify-content: center;  
+      align-items: center;  
+    }  
+    .login-box {  
+      background: white;  
+      padding: 20px;  
+      border-radius: 8px;  
+      width: 280px;  
+      position: relative;  
+    }  
+    .login-box input {  
+      width: 100%;  
+      padding: 8px;  
+      margin: 6px 0;  
+    }  
+    .close-login {  
+      position: absolute;  
+      top: 8px;  
+      right: 12px;  
+      cursor: pointer;  
+      font-size: 16px;  
+    }  
+    .confirm-msg {  
+      margin-top: 6px;  
+      text-align: center;  
+      color: green;  
+    }  
+    @keyframes fadeIn {  
+      from { opacity: 0; transform: translateY(10px); }  
+      to { opacity: 1; transform: translateY(0); }  
+    }  
+  </style>  
+</head>  
+<body>  
+  <div class="background-overlay"></div>  
+  <div class="chat-container">  
+    <div class="header">  
+      <h2>Caixa de Sugestões da Escola</h2>  
+      <button class="adm-login-btn" onclick="alternarLogin()">Login ADM</button>  
+    </div>  
+    <div id="notification" class="notification"></div>  
+    <div class="messages" id="messages"></div>  
+    <div class="input-section">  
+      <textarea id="messageInput" rows="3" placeholder="Digite sua sugestão..."></textarea>  
+      <button class="send-btn" onclick="enviarMensagem()">Enviar Sugestão</button>  
+      <div class="confirm-msg" id="confirmMsg"></div>  
+    </div>  
+  </div>  
+  <div class="login-modal" id="loginModal">  
+    <div class="login-box">  
+      <span class="close-login" onclick="fecharLogin()">❌</span>  
+      <h3>Login ADM</h3>  
+      <input type="text" id="admUser" placeholder="Usuário">  
+      <input type="password" id="admPass" placeholder="Senha">  
+      <button onclick="loginADM()">Entrar</button>  
+    </div>  
+  </div>  
+  <script>  
+    const firebaseConfig = {  
+      apiKey: "AIzaSyD8HpvX2scRrV2Yhh_V8B3QMZIRwyR8gak",  
+      authDomain: "chatanonimo-d1676.firebaseapp.com",  
+      databaseURL: "https://chatanonimo-d1676-default-rtdb.firebaseio.com",  
+      projectId: "chatanonimo-d1676",  
+      storageBucket: "chatanonimo-d1676.appspot.com",  
+      messagingSenderId: "951790566544",  
+      appId: "1:951790566544:web:4687d205d4673be5636c15",  
+      measurementId: "G-XGGHD7E1TB"  
+    };  
+    firebase.initializeApp(firebaseConfig);  
+    const db = firebase.database();  
+    let nomeUsuario = "", isADM = false, nomeADM = "";  
+    const admCredenciais = {  
+      "Gabriel": "10022010",  
+      "Parana": "02062010",  
+      "Gremio": "GremioEstudantilADM"  
+    };  
+    function aplicarModoEscuroAutomatico() {  
+      const h = new Date().getHours();  
+      if (h >= 18 || h < 6) document.body.classList.add("dark-mode");  
+    }  
+    window.onload = () => {  
+      aplicarModoEscuroAutomatico();  
+      const nome = prompt("Coloque seu nome (ou deixe em branco para anônimo):");  
+      nomeUsuario = nome || "Anônimo";  
+      document.getElementById("notification").textContent = `Olá ${nomeUsuario}! Compartilhe sua sugestão abaixo.`;  
+      carregarMensagens();  
+    };  
+    function contemPalavroes(texto) {  
+      const palavras = ["idiota", "burro", "merda", "desgraça", "fdp", "viado", "bosta", "porra", "Puta", "Caralho", "Burra", "Bct", "Lazarento", "Corno", "Corna", "Sexo", "Putaria", "Puto", "Chifrudo", "Mãe", "Pai", "Pinto", "Pal", "Pênis", "Buceta", "vai se fuder", "tesao", "pelada", "xxx", "porno"];  
+      const normalizado = texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/gi, "");  
+      return palavras.some(p => normalizado.includes(p));  
+    }  
+    function enviarMensagem() {  
+      const input = document.getElementById("messageInput");  
+      const texto = input.value.trim();  
+      const confirm = document.getElementById("confirmMsg");  if (!texto) return;  
+    
+  if (contemPalavroes(texto)) {  
+    confirm.innerText = "Por favor, evite palavrões.";  
+    confirm.style.color = "red";  
+    return;  
+  }  
+  const remetente = isADM ? `ADM: ${nomeADM.toUpperCase()}` : nomeUsuario;  
+  db.ref("mensagens").push({ nome: remetente, texto, adm: isADM });  
+  input.value = "";  
+  confirm.innerText = "Mensagem enviada com sucesso!";  
+  confirm.style.color = "green";  
+}  
+function carregarMensagens() {  
+  db.ref("mensagens").on("value", snap => {  
+    const container = document.getElementById("messages");  
+    container.innerHTML = "";  
+    const dados = snap.val();  
+    for (let id in dados) {  
+      const msg = dados[id];  
+      const div = document.createElement("div");  
+      div.className = "message" + (msg.adm ? " adm" : "");  
+      const user = document.createElement("div");  
+      user.className = "username";  
+      user.textContent = msg.nome;  
+      const texto = document.createElement("div");  
+      texto.textContent = msg.texto;  
+      div.appendChild(user);  
+      div.appendChild(texto);  
+      if (isADM) {  
+        const btn = document.createElement("button");  
+        btn.className = "delete-btn";  
+        btn.textContent = "🗑️";  
+        btn.onclick = () => db.ref("mensagens/" + id).remove();  
+        div.appendChild(btn);  
+      }  
+      container.appendChild(div);  
+    }  
+    container.scrollTop = container.scrollHeight;  
+  });  
+}  
+function abrirLogin() {  
+  document.getElementById("loginModal").style.display = "flex";  
+}  
+function fecharLogin() {  
+  document.getElementById("loginModal").style.display = "none";  
+}  
+function loginADM() {  
+  const user = document.getElementById("admUser").value.trim();  
+  const pass = document.getElementById("admPass").value.trim();  
+  if (admCredenciais[user] === pass) {  
+    isADM = true;  
+    nomeADM = user;  
+    fecharLogin();  
+    alert(`Logado como ${nomeADM}`);  
+    document.querySelector(".adm-login-btn").textContent = "Sair do Login ADM";  
+    carregarMensagens();  
+  } else {  
+    alert("Credenciais incorretas.");  
+  }  
+}  
+function logoutADM() {  
+  isADM = false;  
+  nomeADM = "";  
+  document.querySelector(".adm-login-btn").textContent = "Login ADM";  
+  carregarMensagens();  
+}  
+function alternarLogin() {  
+  isADM ? logoutADM() : abrirLogin();  
+}
 
-      if (!texto) return;
-
-      if (contemPalavroes(texto)) {
-        confirm.innerText = "Por favor, evite palavrões.";
-        confirm.style.color = "red";
-        return;
-      }
-
-      const remetente = isADM ? `ADM: ${nomeADM.toUpperCase()}` : nomeUsuario;
-      db.ref("mensagens").push({ nome: remetente, texto, adm: isADM });
-      input.value = "";
-      confirm.innerText = "Mensagem enviada com sucesso!";
-      confirm.style.color = "green";
-    }
-    function carregarMensagens() {
-      db.ref("mensagens").on("value", snap => {
-        const container = document.getElementById("messages");
-        container.innerHTML = "";
-        const dados = snap.val();
-        for (let id in dados) {
-          const msg = dados[id];
-          const div = document.createElement("div");
-          div.className = "message" + (msg.adm ? " adm" : "");
-          const user = document.createElement("div");
-          user.className = "username";
-          user.textContent = msg.nome;
-          const texto = document.createElement("div");
-          texto.textContent = msg.texto;
-          div.appendChild(user);
-          div.appendChild(texto);
-          if (isADM) {
-            const btn = document.createElement("button");
-            btn.className = "delete-btn";
-            btn.textContent = "🗑️";
-            btn.onclick = () => db.ref("mensagens/" + id).remove();
-            div.appendChild(btn);
-          }
-          container.appendChild(div);
-        }
-        container.scrollTop = container.scrollHeight;
-      });
-    }
-    function abrirLogin() {
-      document.getElementById("loginModal").style.display = "flex";
-    }
-    function fecharLogin() {
-      document.getElementById("loginModal").style.display = "none";
-    }
-    function loginADM() {
-      const user = document.getElementById("admUser").value.trim();
-      const pass = document.getElementById("admPass").value.trim();
-      if (admCredenciais[user] === pass) {
-        isADM = true;
-        nomeADM = user;
-        fecharLogin();
-        alert(`Logado como ${nomeADM}`);
-        document.querySelector(".adm-login-btn").textContent = "Sair do Login ADM";
-        carregarMensagens();
-      } else {
-        alert("Credenciais incorretas.");
-      }
-    }
-    function logoutADM() {
-      isADM = false;
-      nomeADM = "";
-      document.querySelector(".adm-login-btn").textContent = "Login ADM";
-      carregarMensagens();
-    }
-    function alternarLogin() {
-      isADM ? logoutADM() : abrirLogin();
-    }
-  </script>
-</body>
+  </script>  
+</body>  
 </html>
