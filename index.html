@@ -1,202 +1,132 @@
-<!DOCTYPE html>
-<html lang="pt-br">
+<!DOCTYPE html><html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chat de Sugestões do Grêmio</title>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #e8f0fe;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background: #0b57d0;
-      color: white;
-      padding: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .chat-container {
-      max-width: 600px;
-      margin: 30px auto;
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-    }
-    .message {
-      background: #f1f1f1;
-      padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 5px;
-      position: relative;
-    }
-    .delete-btn {
-      position: absolute;
-      right: 10px;
-      top: 10px;
-      background: red;
-      color: white;
-      border: none;
-      padding: 4px 8px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    #loginModal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0,0,0,0.4);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      display: none;
-    }
-    #loginModal.active {
-      display: flex;
-    }
-    .login-box {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-    }
-    #loginBtn {
-      cursor: pointer;
-      background: #0b57d0;
-      color: white;
-      border: none;
-      padding: 10px;
-      border-radius: 5px;
-    }
-    textarea, button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-    }
+    body { font-family: Arial; background: #f5f5f5; margin: 0; padding: 20px; }
+    #chat { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; }
+    .msg { margin: 10px 0; padding: 10px; border-radius: 5px; background: #eaeaea; position: relative; }
+    .adm-tag { position: absolute; top: -10px; left: 10px; background: blue; color: white; padding: 2px 5px; font-size: 12px; border-radius: 3px; }
+    .msg .delete { position: absolute; top: 5px; right: 10px; color: red; cursor: pointer; }
+    #loginBox { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border: 1px solid #ccc; border-radius: 10px; }
+    #logoutBtn { display: none; margin-top: 10px; }
   </style>
 </head>
 <body>
+  <div id="chat">
+    <h2>Chat de Sugestões do Grêmio</h2>
+    <div id="messages"></div>
+    <input type="text" id="msgInput" placeholder="Digite sua sugestão...">
+    <button onclick="sendMessage()">Enviar</button>
+    <button onclick="showLogin()">Login ADM</button>
+    <button id="logoutBtn" onclick="logout()">Logout</button>
+  </div>  <div id="loginBox">
+    <h3>Login de ADM</h3>
+    <input type="text" id="loginUser" placeholder="Usuário">
+    <input type="password" id="loginPass" placeholder="Senha">
+    <button onclick="login()">Entrar</button>
+  </div>  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD8HpvX2scRrV2Yhh_V8B3QMZIRwyR8gak",
+      authDomain: "chatanonimo-d1676.firebaseapp.com",
+      databaseURL: "https://chatanonimo-d1676-default-rtdb.firebaseio.com",
+      projectId: "chatanonimo-d1676",
+      storageBucket: "chatanonimo-d1676.appspot.com",
+      messagingSenderId: "951790566544",
+      appId: "1:951790566544:web:4687d205d4673be5636c15",
+      measurementId: "G-XGGHD7E1TB"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-<header>
-  <h2>Chat de Sugestões do Grêmio</h2>
-  <button id="openLogin" style="padding: 10px;">Login</button>
-</header>
+    const badWords = ["caralho", "porra", "merda", "bosta", "puta", "pqp", "fdp", "vai tomar", "vai se f", "cacete", "c*", "p*", "cu", "vsf", "vtmnc", "vtnc", "merd@", "p0rra", "carai", "caraii", "caraiii", "merdaa", "caraleo", "caraaalho", "caralh0", "c4ralho", "foda", "fodase", "f0d4", "fod@", "f0da", "fodaa", "fodasse", "viad@", "viado", "buceta", "bucet@", "bct", "btz", "f*d*-s*", "safado", "desgraca", "desgraça", "arrombado", "babaca", "corno", "corn0", "trouxa"];
 
-<div class="chat-container">
-  <div id="messages"></div>
-  <textarea id="messageInput" placeholder="Digite sua sugestão..."></textarea>
-  <button onclick="sendMessage()">Enviar</button>
-</div>
+    const admins = {
+      "gremio": "02062010",
+      "parana": "02062010"
+    };
 
-<div id="loginModal">
-  <div class="login-box">
-    <h3>Login</h3>
-    <input type="text" id="username" placeholder="Usuário"><br><br>
-    <input type="password" id="password" placeholder="Senha"><br><br>
-    <button onclick="doLogin()">Entrar</button>
-  </div>
-</div>
-
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getDatabase, ref, push, onChildAdded, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyD8HpvX2scRrV2Yhh_V8B3QMZIRwyR8gak",
-    authDomain: "chatanonimo-d1676.firebaseapp.com",
-    databaseURL: "https://chatanonimo-d1676-default-rtdb.firebaseio.com",
-    projectId: "chatanonimo-d1676",
-    storageBucket: "chatanonimo-d1676.appspot.com",
-    messagingSenderId: "951790566544",
-    appId: "1:951790566544:web:4687d205d4673be5636c15",
-    measurementId: "G-XGGHD7E1TB"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-  const messagesRef = ref(db, "messages");
-
-  const isAdmin = () => localStorage.getItem("logged") === "true";
-
-  const blockedWords = [
-    "puta", "puto", "fdp", "caralho", "carai", "porra", "bosta", "merda", "desgraça",
-    "cacete", "arrombado", "pqp", "foda", "fodase", "foda-se", "cu", "buceta", "vadia",
-    "vagabunda", "viado", "boiola", "corno", "safado", "safada", "bixa", "trouxa", "otário",
-    "otaria", "piranha", "escroto", "escrota", "cuzão", "babaca", "pau no cu", "pau no seu cu",
-    "krl", "krlh", "crlh", "vsf", "vtnc", "vai se fuder", "vai tomar no cu", "c@ralho", "c@r@lho", "caralhooo",
-    "fud3r", "fudido", "fudida", "p0rra", "poha", "kct", "k7", "fudido", "fudida", "f*dido", "f*dida", "cacet*"
-  ];
-
-  const sanitize = (text) => {
-    const norm = text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    for (let word of blockedWords) {
-      const pattern = new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, "gi");
-      if (pattern.test(norm)) return true;
+    let currentADM = localStorage.getItem('admUser');
+    if (currentADM) {
+      document.getElementById('logoutBtn').style.display = 'inline-block';
     }
-    return false;
-  };
 
-  function sendMessage() {
-    const input = document.getElementById("messageInput");
-    const message = input.value.trim();
-    if (!message) return;
-    if (sanitize(message)) {
-      alert("Mensagem contém palavras inadequadas.");
-      return;
+    function filterBadWords(text) {
+      let filtered = text;
+      badWords.forEach(word => {
+        const regex = new RegExp(word, 'gi');
+        filtered = filtered.replace(regex, '*'.repeat(word.length));
+      });
+      return filtered;
     }
-    push(messagesRef, { text: message });
-    input.value = "";
-  }
 
-  function renderMessage(key, text) {
-    const container = document.getElementById("messages");
-    const msgDiv = document.createElement("div");
-    msgDiv.className = "message";
-    msgDiv.id = key;
-    msgDiv.textContent = text;
+    function sendMessage() {
+      const input = document.getElementById("msgInput");
+      let text = input.value.trim();
+      if (!text) return;
+      text = filterBadWords(text);
 
-    if (isAdmin()) {
-      const del = document.createElement("button");
-      del.textContent = "Apagar";
-      del.className = "delete-btn";
-      del.onclick = () => {
-        if (confirm("Apagar essa mensagem para todos?")) {
-          remove(ref(db, `messages/${key}`));
-        }
+      const msgData = {
+        text,
+        isADM: currentADM ? true : false,
+        from: currentADM || "anon"
       };
-      msgDiv.appendChild(del);
+
+      db.ref("messages").push(msgData);
+      input.value = "";
     }
 
-    container.appendChild(msgDiv);
-  }
+    db.ref("messages").on("value", snapshot => {
+      const messagesDiv = document.getElementById("messages");
+      messagesDiv.innerHTML = "";
+      const data = snapshot.val();
+      for (let id in data) {
+        const msg = data[id];
+        const div = document.createElement("div");
+        div.className = "msg";
+        if (msg.isADM) {
+          const tag = document.createElement("div");
+          tag.className = "adm-tag";
+          tag.innerText = "ADM";
+          div.appendChild(tag);
+        }
+        div.innerHTML += `<strong>${msg.from}:</strong> ${msg.text}`;
+        if (currentADM) {
+          const del = document.createElement("span");
+          del.className = "delete";
+          del.innerText = "✖";
+          del.onclick = () => db.ref("messages/" + id).remove();
+          div.appendChild(del);
+        }
+        messagesDiv.appendChild(div);
+      }
+    });
 
-  onChildAdded(messagesRef, (data) => {
-    const { text } = data.val();
-    renderMessage(data.key, text);
-  });
-
-  function doLogin() {
-    const u = document.getElementById("username").value;
-    const p = document.getElementById("password").value;
-    if (u === "gremio" && p === "02062010") {
-      localStorage.setItem("logged", "true");
-      alert("Logado com sucesso.");
-      location.reload();
-    } else {
-      alert("Usuário ou senha incorretos.");
+    function showLogin() {
+      document.getElementById("loginBox").style.display = 'block';
     }
-  }
 
-  document.getElementById("openLogin").onclick = () => {
-    document.getElementById("loginModal").classList.add("active");
-  };
-</script>
+    function login() {
+      const user = document.getElementById("loginUser").value.trim().toLowerCase();
+      const pass = document.getElementById("loginPass").value;
+      if (admins[user] && admins[user] === pass) {
+        localStorage.setItem('admUser', user);
+        currentADM = user;
+        document.getElementById("loginBox").style.display = 'none';
+        document.getElementById('logoutBtn').style.display = 'inline-block';
+        alert("Logado como ADM: " + user);
+      } else {
+        alert("Usuário ou senha incorretos.");
+      }
+    }
 
-</body>
+    function logout() {
+      localStorage.removeItem('admUser');
+      currentADM = null;
+      document.getElementById('logoutBtn').style.display = 'none';
+    }
+  </script></body>
 </html>
