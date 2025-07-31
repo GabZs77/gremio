@@ -258,11 +258,13 @@
     }
   };
   logoutAdmBtn.onclick = () => {
-    loggedADMs = loggedADMs.filter(adm => adm !== userName);
-    userName = "Anônimo";
-    updateAdminButtons();
-    alert("Você saiu do modo ADM.");
-  };
+  loggedADMs = loggedADMs.filter(adm => adm !== userName);
+  userName = "Anônimo";
+  updateAdminButtons();
+  alert("Você saiu do modo ADM.");
+  // Recarrega as mensagens para remover botões
+  db.ref("mensagens").once("value", () => {});
+};
   function updateAdminButtons() {
     loginAdmBtn.style.display = loggedADMs.length > 0 ? "none" : "inline-block";
     logoutAdmBtn.style.display = loggedADMs.length > 0 ? "inline-block" : "none";
@@ -311,17 +313,17 @@
       div.innerHTML += `<span class="time">${msg.horario}</span>`;
       
       // Mostra o botão de apagar apenas para administradores (incluindo mensagens próprias)
-      if (loggedADMs.includes(userName)) {
-        const delBtn = document.createElement("button");
-        delBtn.className = "delete-btn";
-        delBtn.textContent = "Apagar";
-        delBtn.onclick = () => {
-          if (confirm("Quer mesmo apagar essa mensagem?")) {
-            db.ref("mensagens/" + key).remove();
-          }
-        };
-        div.appendChild(delBtn);
-      }
+      if (adms[userName] && loggedADMs.includes(userName)) {
+  const delBtn = document.createElement("button");
+  delBtn.className = "delete-btn";
+  delBtn.textContent = "Apagar";
+  delBtn.onclick = () => {
+    if (confirm("Quer mesmo apagar essa mensagem?")) {
+      db.ref("mensagens/" + key).remove();
+    }
+  };
+  div.appendChild(delBtn);
+}
       
       messagesDiv.appendChild(div);
     });
