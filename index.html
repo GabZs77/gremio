@@ -193,11 +193,10 @@
     };
 
     function contemPalavroes(texto) {
-      const lista = ["palavrão", "idiota", "burro", "merda", "desgraça", "fdp", "viado", "bosta", "porra"];
+      const lista = ["Puta", "idiota", "burro", "merda", "desgraça", "fdp", "viado", "bosta", "porra", "Caralho", "Burra", "Bct", "Lazarento", "Corno", "Corna", "Sexo", "Putaria", "Puto", "Chifrudo", "Mãe", "Pai", "Pinto", "Pal", "Pênis", "Buceta", "vai se fuder", "tesao", "pelada", "xxx", "porno"];
       const txt = texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/gi, "");
       return lista.some(p => txt.includes(p));
     }
-
     function enviarMensagem() {
       const input = document.getElementById("messageInput");
       const texto = input.value.trim();
