@@ -139,7 +139,7 @@
   <div class="chat-container">
     <div class="header">
       <h2>Caixa de Sugestões</h2>
-      <button class="adm-login-btn" onclick="abrirLogin()">Login ADM</button>
+      <button class="adm-login-btn" onclick="alternarLogin()">Login ADM</button>
     </div>
     <div id="notification" class="notification"></div>
     <div class="messages" id="messages"></div>
@@ -161,7 +161,6 @@
   </div>
 
   <script>
-    // 🔥 Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyD8HpvX2scRrV2Yhh_V8B3QMZIRwyR8gak",
       authDomain: "chatanonimo-d1676.firebaseapp.com",
@@ -252,14 +251,14 @@
             btn.textContent = "🗑️";
             btn.onclick = () => db.ref("mensagens/" + id).remove();
             div.appendChild(btn);
-          }
+                   }
 
           container.appendChild(div);
         }
       });
     }
 
-        function abrirLogin() {
+    function abrirLogin() {
       document.getElementById("loginModal").style.display = "flex";
     }
 
@@ -275,10 +274,26 @@
         isADM = true;
         nomeADM = user;
         fecharLogin();
-        alert("Login ADM realizado com sucesso!");
-        carregarMensagens(); // recarrega com botões de apagar
+        alert(`Login ADM realizado com sucesso como: ${nomeADM}`);
+        document.querySelector(".adm-login-btn").textContent = "Sair do Login ADM";
+        carregarMensagens();
       } else {
         alert("Credenciais inválidas.");
+      }
+    }
+
+    function logoutADM() {
+      isADM = false;
+      nomeADM = "";
+      document.querySelector(".adm-login-btn").textContent = "Login ADM";
+      carregarMensagens();
+    }
+
+    function alternarLogin() {
+      if (isADM) {
+        logoutADM();
+      } else {
+        abrirLogin();
       }
     }
   </script>
