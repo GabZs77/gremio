@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chat Anônimo</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chat de Sugestões do Grêmio</title>
   <style>
     body {
       margin: 0;
@@ -17,9 +17,21 @@
     header {
       background: #075e54;
       color: white;
-      text-align: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       padding: 15px;
       font-size: 20px;
+    }
+
+    #loginBtn, #logoutBtn {
+      background: #128c7e;
+      border: none;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
     }
 
     #chat {
@@ -36,6 +48,25 @@
       margin: 5px 0;
       border-radius: 10px;
       max-width: 70%;
+      position: relative;
+    }
+
+    .deleteBtn {
+      display: none;
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: red;
+      border: none;
+      color: white;
+      border-radius: 5px;
+      font-size: 12px;
+      padding: 2px 6px;
+      cursor: pointer;
+    }
+
+    .message.admin .deleteBtn {
+      display: block;
     }
 
     footer {
@@ -63,11 +94,50 @@
       border-radius: 20px;
       cursor: pointer;
     }
+
+    /* Janela de login */
+    #loginModal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      display: none;
+      z-index: 999;
+    }
+
+    #loginModal input {
+      margin-bottom: 10px;
+      width: 100%;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    #overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.4);
+      display: none;
+      z-index: 998;
+    }
   </style>
 </head>
 <body>
 
-  <header>Chat Anônimo</header>
+  <header>
+    <span>Chat Anônimo</span>
+    <div>
+      <button id="loginBtn">Login</button>
+      <button id="logoutBtn" style="display:none;">Sair</button>
+    </div>
+  </header>
 
   <div id="chat"></div>
 
@@ -76,28 +146,38 @@
     <button onclick="sendMessage()">Enviar</button>
   </footer>
 
+  <!-- Modal de login -->
+  <div id="overlay"></div>
+  <div id="loginModal">
+    <h3>Login Admin</h3>
+    <input type="text" id="userInput" placeholder="Usuário">
+    <input type="password" id="passInput" placeholder="Senha">
+    <button onclick="login()">Entrar</button>
+  </div>
+
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
   <script>
-    // 🔄 SUBSTITUA aqui pelas suas credenciais do Firebase
+    // 🔄 Cole aqui sua config do Firebase:
     const firebaseConfig = {
-  apiKey: "AIzaSyD8HpvX2scRrV2Yhh_V8B3QMZIRwyR8gak",
-  authDomain: "chatanonimo-d1676.firebaseapp.com",
-  databaseURL: "https://chatanonimo-d1676-default-rtdb.firebaseio.com",
-  projectId: "chatanonimo-d1676",
-  storageBucket: "chatanonimo-d1676.firebasestorage.app",
-  messagingSenderId: "951790566544",
-  appId: "1:951790566544:web:4687d205d4673be5636c15",
-  measurementId: "G-XGGHD7E1TB"
-};
-    // Inicializa Firebase
+      apiKey: "SUA_API_KEY",
+      authDomain: "SEU_PROJETO.firebaseapp.com",
+      databaseURL: "https://SEU_PROJETO.firebaseio.com",
+      projectId: "SEU_PROJETO",
+      storageBucket: "SEU_PROJETO.appspot.com",
+      messagingSenderId: "SEU_ID",
+      appId: "SUA_APP_ID"
+    };
+
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
     const chat = document.getElementById("chat");
     const input = document.getElementById("messageInput");
+
+    let isAdmin = false;
 
     function sendMessage() {
       const text = input.value.trim();
@@ -111,20 +191,104 @@
       input.value = "";
     }
 
-    // Enviar com Enter
-    input.addEventListener("keypress", function(e) {
+    input.addEventListener("keypress", e => {
       if (e.key === "Enter") sendMessage();
     });
 
-    // Atualizar chat em tempo real
-    db.ref("messages").on("child_added", function(snapshot) {
-      const msg = snapshot.val();
+    function createMessageElement(key, msg) {
       const div = document.createElement("div");
       div.className = "message";
       div.textContent = msg.text;
+      div.dataset.key = key;
+
+      if (isAdmin) {
+        div.classList.add("admin");
+        const del = document.createElement("button");
+        del.className = "deleteBtn";
+        del.textContent = "Apagar";
+        del.onclick = () => deleteMessage(key, div);
+        div.appendChild(del);
+      }
+
       chat.appendChild(div);
       chat.scrollTop = chat.scrollHeight;
+    }
+
+    db.ref("messages").on("child_added", snapshot => {
+      const key = snapshot.key;
+      const msg = snapshot.val();
+      createMessageElement(key, msg);
     });
+
+    db.ref("messages").on("child_removed", snapshot => {
+      const key = snapshot.key;
+      const el = document.querySelector(`.message[data-key="${key}"]`);
+      if (el) el.remove();
+    });
+
+    function deleteMessage(key, element) {
+      if (confirm("Deseja apagar esta mensagem para todos?")) {
+        db.ref("messages/" + key).remove();
+      }
+    }
+
+    // Login modal
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const loginModal = document.getElementById("loginModal");
+    const overlay = document.getElementById("overlay");
+
+    loginBtn.onclick = () => {
+      overlay.style.display = "block";
+      loginModal.style.display = "block";
+    };
+
+    logoutBtn.onclick = () => {
+      isAdmin = false;
+      loginBtn.style.display = "inline-block";
+      logoutBtn.style.display = "none";
+      overlay.style.display = "none";
+      loginModal.style.display = "none";
+      refreshMessagesAsNormal();
+    };
+
+    function login() {
+      const user = document.getElementById("userInput").value;
+      const pass = document.getElementById("passInput").value;
+
+      if (user === "gremio" && pass === "02062010") {
+        isAdmin = true;
+        loginModal.style.display = "none";
+        overlay.style.display = "none";
+        loginBtn.style.display = "none";
+        logoutBtn.style.display = "inline-block";
+        refreshMessagesAsAdmin();
+      } else {
+        alert("Usuário ou senha incorretos.");
+      }
+    }
+
+    function refreshMessagesAsAdmin() {
+      document.querySelectorAll(".message").forEach(el => {
+        el.classList.add("admin");
+        if (!el.querySelector(".deleteBtn")) {
+          const key = el.dataset.key;
+          const del = document.createElement("button");
+          del.className = "deleteBtn";
+          del.textContent = "Apagar";
+          del.onclick = () => deleteMessage(key, el);
+          el.appendChild(del);
+        }
+      });
+    }
+
+    function refreshMessagesAsNormal() {
+      document.querySelectorAll(".message").forEach(el => {
+        el.classList.remove("admin");
+        const delBtn = el.querySelector(".deleteBtn");
+        if (delBtn) delBtn.remove();
+      });
+    }
   </script>
 </body>
 </html>
