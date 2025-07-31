@@ -1,138 +1,50 @@
-<!DOCTYPE html><html lang="pt-BR">
+<!DOCTYPE html>
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chat Anônimo</title>
-  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&display=swap">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
-    body { background-color: #ece5dd; display: flex; justify-content: center; align-items: center; height: 100vh; }
-    .container { width: 100%; max-width: 500px; height: 90vh; background: #fff; display: flex; flex-direction: column; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.2); overflow: hidden; }
-    .header { background: #075E54; color: white; padding: 10px; font-size: 18px; display: flex; justify-content: space-between; align-items: center; }
-    .chat { flex: 1; padding: 10px; overflow-y: auto; background: #e5ddd5; display: flex; flex-direction: column; gap: 8px; }
-    .message { background: #dcf8c6; padding: 10px; border-radius: 10px; max-width: 70%; position: relative; }
-    .delete-btn { position: absolute; top: 5px; right: 5px; background: transparent; border: none; cursor: pointer; color: red; font-weight: bold; }
-    .footer { display: flex; padding: 10px; background: #f0f0f0; }
-    .footer input { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ccc; }
-    .footer button { padding: 10px 15px; margin-left: 10px; border: none; border-radius: 20px; background: #25d366; color: white; cursor: pointer; font-weight: bold; }
-    .adm-login { cursor: pointer; font-size: 14px; color: white; text-decoration: underline; }
-    .adm-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
-    .adm-box { background: white; padding: 20px; border-radius: 8px; position: relative; width: 300px; }
-    .adm-box input { display: block; margin-bottom: 10px; width: 100%; padding: 8px; }
-    .adm-close { position: absolute; top: 10px; right: 10px; cursor: pointer; font-weight: bold; }
-    .name-prompt { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; }
-    .name-box { background: white; padding: 20px; border-radius: 8px; text-align: center; }
-    .name-box input { padding: 8px; width: 80%; margin-top: 10px; }
-    .name-box button { margin-top: 10px; padding: 8px 16px; background: #25d366; color: white; border: none; border-radius: 20px; cursor: pointer; }
-    .notice { background: #ffeb3b; padding: 5px; font-size: 12px; text-align: center; }
-    .success { background: #c8e6c9; padding: 10px; text-align: center; }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mensagens Anônimas</title>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <span>Chat Anônimo</span>
-      <span class="adm-login" onclick="openAdmLogin()">Login ADM</span>
+  <div class="header">
+    <h2>Mensagens</h2>
+    <button id="admLoginBtn">Login ADM</button>
+  </div>
+
+  <div id="chat" class="chat"></div>
+
+  <div class="form">
+    <textarea id="mensagemInput" placeholder="Digite sua sugestão..."></textarea>
+    <div class="form-footer">
+      <p class="aviso">Sua mensagem é 100% anônima e não será rastreada.</p>
+      <button id="enviarBtn">Enviar sugestão</button>
     </div>
-    <div class="notice">Sua mensagem é 100% anônima e não será rastreada.</div>
-    <div class="chat" id="chatBox"></div>
-    <div class="footer">
-      <input id="messageInput" placeholder="Digite sua sugestão aqui...">
-      <button onclick="sendMessage()">Enviar</button>
+  </div>
+
+  <!-- Modal nome -->
+  <div class="modal" id="nomeModal">
+    <div class="modal-content">
+      <h3>Qual seu nome?</h3>
+      <input type="text" id="nomeInput" placeholder="Deixe em branco para anônimo"/>
+      <button id="confirmarNome">Confirmar</button>
     </div>
-    <div id="admModal" class="adm-modal">
-      <div class="adm-box">
-        <span class="adm-close" onclick="closeAdmLogin()">❌</span>
-        <h3>Login ADM</h3>
-        <input id="admUser" placeholder="Usuário">
-        <input id="admPass" placeholder="Senha" type="password">
-        <button onclick="loginAdm()">Entrar</button>
-      </div>
+  </div>
+
+  <!-- Modal ADM -->
+  <div class="modal" id="admModal">
+    <div class="modal-content">
+      <span class="fechar" id="fecharAdm">&times;</span>
+      <h3>Login ADM</h3>
+      <input type="text" id="admUsuario" placeholder="Usuário"/>
+      <input type="password" id="admSenha" placeholder="Senha"/>
+      <button id="entrarAdm">Entrar</button>
     </div>
-    <div id="namePrompt" class="name-prompt">
-      <div class="name-box">
-        <h3>Digite seu nome ou deixe em branco para anônimo:</h3>
-        <input id="usernameInput" placeholder="Seu nome (opcional)">
-        <button onclick="setUsername()">Confirmar</button>
-      </div>
-    </div>
-    <div id="confirmMsg" class="success" style="display: none;">Mensagem enviada com sucesso!</div>
-  </div>  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyD8HpvX2scRrV2Yhh_V8B3QMZIRwyR8gak",
-      authDomain: "chatanonimo-d1676.firebaseapp.com",
-      databaseURL: "https://chatanonimo-d1676-default-rtdb.firebaseio.com",
-      projectId: "chatanonimo-d1676",
-      storageBucket: "chatanonimo-d1676.appspot.com",
-      messagingSenderId: "951790566544",
-      appId: "1:951790566544:web:4687d205d4673be5636c15",
-      measurementId: "G-XGGHD7E1TB"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+  </div>
 
-    let username = "Anônimo";
-    let isADM = false;
+  <!-- Notificações -->
+  <div id="notificacao" class="notificacao"></div>
 
-    function setUsername() {
-      const input = document.getElementById("usernameInput").value;
-      if (input.trim() !== "") username = input.trim();
-      document.getElementById("namePrompt").style.display = "none";
-    }
-
-    function openAdmLogin() {
-      document.getElementById("admModal").style.display = "flex";
-    }
-
-    function closeAdmLogin() {
-      document.getElementById("admModal").style.display = "none";
-    }
-
-    function loginAdm() {
-      const user = document.getElementById("admUser").value;
-      const pass = document.getElementById("admPass").value;
-      if (user === "admin" && pass === "1234") {
-        isADM = true;
-        alert("Você fez login com " + user);
-        closeAdmLogin();
-      } else {
-        alert("Credenciais inválidas");
-      }
-    }
-
-    function contemPalavroes(texto) {
-      const palavroes = ["palavrao1", "palavrao2", "besta", "idiota"];
-      let clean = texto.toLowerCase().replace(/[^\w\s]/gi, "");
-      return palavroes.some(p => clean.includes(p));
-    }
-
-    function sendMessage() {
-      const msg = document.getElementById("messageInput").value;
-      if (!msg.trim()) return;
-      if (contemPalavroes(msg)) {
-        alert("Por favor, evite palavrões.");
-        return;
-      }
-      db.ref("mensagens").push({ nome: username, texto: msg });
-      document.getElementById("messageInput").value = "";
-      document.getElementById("confirmMsg").style.display = "block";
-      setTimeout(() => document.getElementById("confirmMsg").style.display = "none", 2000);
-    }
-
-    db.ref("mensagens").on("child_added", snap => {
-      const msg = snap.val();
-      const el = document.createElement("div");
-      el.className = "message";
-      el.innerHTML = `<strong>${msg.nome}</strong>: ${msg.texto} <button class='delete-btn' onclick='deleteMsg("${snap.key}")'>x</button>`;
-      document.getElementById("chatBox").appendChild(el);
-    });
-
-    function deleteMsg(id) {
-      db.ref("mensagens").child(id).remove();
-      document.getElementById("chatBox").innerHTML = "";
-    }
-  </script></body>
+  <script src="script.js"></script>
+</body>
 </html>
