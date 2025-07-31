@@ -1,117 +1,125 @@
 <!DOCTYPE html><html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Chat de Sugestões do Grêmio</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <style>
-    body {
-      font-family: 'Roboto', sans-serif;
-      background-color: #e5ddd5;
+    * {
       margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: sans-serif;
+    }
+    body {
+      background: #ece5dd;
+    }
+    #chat-container {
+      max-width: 600px;
+      margin: 50px auto;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    #messages {
+      height: 400px;
+      overflow-y: scroll;
+      padding: 20px;
       display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }.chat-container {
-  background-color: #ffffff;
-  width: 100%;
-  max-width: 480px;
-  height: 90vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.chat-header {
-  background-color: #075E54;
-  color: white;
-  padding: 10px;
-  text-align: center;
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.chat-messages {
-  flex-grow: 1;
-  padding: 10px;
-  overflow-y: auto;
-  background-color: #dcf8c6;
-}
-
-.message {
-  background-color: white;
-  margin-bottom: 10px;
-  padding: 8px 12px;
-  border-radius: 7px;
-  max-width: 80%;
-  position: relative;
-  word-wrap: break-word;
-}
-
-.message.adm::before {
-  content: "ADM";
-  position: absolute;
-  top: -14px;
-  left: 0;
-  background-color: #2196F3;
-  color: white;
-  font-size: 10px;
-  padding: 2px 5px;
-  border-radius: 3px;
-}
-
-.message.admin-delete {
-  font-size: 10px;
-  color: red;
-  cursor: pointer;
-  text-align: right;
-}
-
-.chat-input {
-  display: flex;
-  padding: 10px;
-  border-top: 1px solid #ccc;
-  background-color: #f0f0f0;
-}
-
-.chat-input input {
-  flex-grow: 1;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 20px;
-  outline: none;
-}
-
-.chat-input button {
-  background-color: #075E54;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  margin-left: 8px;
-  border-radius: 20px;
-  cursor: pointer;
-}
-
+      flex-direction: column;
+      gap: 10px;
+    }
+    .message {
+      background: #dcf8c6;
+      padding: 10px 15px;
+      border-radius: 10px;
+      align-self: flex-start;
+      position: relative;
+      max-width: 80%;
+    }
+    .message .adm-tag {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      background-color: #007bff;
+      color: white;
+      font-size: 10px;
+      padding: 2px 5px;
+      border-radius: 5px;
+    }
+    #input-container {
+      display: flex;
+      border-top: 1px solid #ddd;
+    }
+    #name, #message {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      outline: none;
+    }
+    #send-btn {
+      padding: 10px;
+      background: #075e54;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    #login-adm {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 10px 15px;
+      background-color: #075e54;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #login-modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .delete-btn {
+      margin-top: 5px;
+      background: red;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 2px 5px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
-  <div class="chat-container">
-    <div class="chat-header">Chat de Sugestões do Grêmio</div>
-    <div id="messages" class="chat-messages"></div>
-    <div class="chat-input">
-      <input type="text" id="messageInput" placeholder="Digite sua mensagem...">
-      <button onclick="sendMessage()">Enviar</button>
+  <button id="login-adm">Login ADM</button>  <div id="login-modal">
+    <input type="text" id="adm-username" placeholder="Usuário" />
+    <input type="password" id="adm-password" placeholder="Senha" />
+    <button onclick="loginADM()">Entrar</button>
+  </div>  <div id="chat-container">
+    <div id="messages"></div>
+    <div id="input-container">
+      <input type="text" id="name" placeholder="Seu nome" />
+      <input type="text" id="message" placeholder="Digite sua mensagem..." />
+      <button id="send-btn">Enviar</button>
     </div>
-  </div>  <!-- Firebase -->  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>  <script>
+  </div>  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyD8HpvX2scRrV2Yhh_V8B3QMZIRwyR8gak",
       authDomain: "chatanonimo-d1676.firebaseapp.com",
       databaseURL: "https://chatanonimo-d1676-default-rtdb.firebaseio.com",
       projectId: "chatanonimo-d1676",
-      storageBucket: "chatanonimo-d1676.appspot.com",
+      storageBucket: "chatanonimo-d1676.firebasestorage.app",
       messagingSenderId: "951790566544",
       appId: "1:951790566544:web:4687d205d4673be5636c15",
       measurementId: "G-XGGHD7E1TB"
@@ -119,69 +127,82 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const messagesRef = db.ref("messages");
 
-    const adminUsers = {
-      "Paraná": "02062010"
-    };
+    let isADM = false;
+    let admName = "";
 
-    let isAdmin = false;
-    let currentUser = null;
+    const badWords = ["puta", "merda", "caralho", "fdp", "filho da puta", "vsf", "vtnc", "pqp", "porra", "desgraça", "cuzão", "bosta", "carai", "caraleo", "vai tomar no cu", "vai se foder", "cacete", "piranha", "babaca", "otario", "corno", "boiola", "baitola", "viado", "pau no cu", "arrombado", "buceta", "penis", "foda", "foder", "carai", "cu", "perereca", "krl", "crl", "crlh", "kskskrl", "caraii", "caraiiii", "caraleo", "caraaaalho", "vsfd", "mizeravi", "mizerável"]
 
-    const bannedWords = ["palavrão1", "palavrão2", "caralho", "carai", "porra", "puta", "fdp", "merda", "buceta", "pqp", "cacete", "foda", "vai tomar", "vai se f", "vsf", "vtnc", "krl", "desgraca", "estrupa", "arrombado", "filho da", "fodase", "f0da", "b1r1n4", "krlho", "krlh", "caraaalho"];
-
-    function filterBadWords(text) {
-      let filtered = text.toLowerCase();
-      for (const word of bannedWords) {
-        if (filtered.includes(word)) return "[Mensagem com conteúdo inapropriado removida]";
-      }
-      return text;
+    function sanitize(text) {
+      let clean = text.toLowerCase();
+      return badWords.some(palavra => clean.includes(palavra));
     }
 
-    function sendMessage() {
-      const input = document.getElementById("messageInput");
-      let text = input.value.trim();
-      if (text === "") return;
+    document.getElementById("send-btn").onclick = function () {
+      const name = document.getElementById("name").value || "Anônimo";
+      const message = document.getElementById("message").value;
+      if (!message.trim()) return;
+      if (sanitize(message)) return alert("Mensagem contém palavrões.");
 
-      const content = filterBadWords(text);
-
-      messagesRef.push({
-        text: content,
-        timestamp: Date.now(),
-        user: currentUser || "Anônimo",
-        isAdmin: isAdmin
+      const id = Date.now();
+      db.ref("mensagens/" + id).set({
+        nome: name,
+        texto: message,
+        adm: isADM ? admName : false
       });
-      input.value = "";
+      document.getElementById("message").value = "";
     }
 
-    messagesRef.on("child_added", (snapshot) => {
-      const message = snapshot.val();
-      const msgEl = document.createElement("div");
-      msgEl.classList.add("message");
-      if (message.isAdmin) msgEl.classList.add("adm");
-      msgEl.textContent = message.text;
+    db.ref("mensagens").on("value", snapshot => {
+      const container = document.getElementById("messages");
+      container.innerHTML = "";
+      snapshot.forEach(child => {
+        const data = child.val();
+        const div = document.createElement("div");
+        div.className = "message";
+        div.innerHTML = `<strong>${data.nome}</strong>: ${data.texto}`;
 
-      if (isAdmin) {
-        const delBtn = document.createElement("div");
-        delBtn.classList.add("admin-delete");
-        delBtn.textContent = "Apagar";
-        delBtn.onclick = () => snapshot.ref.remove();
-        msgEl.appendChild(delBtn);
-      }
+        if (data.adm) {
+          const tag = document.createElement("span");
+          tag.className = "adm-tag";
+          tag.innerText = "ADM";
+          div.appendChild(tag);
+        }
 
-      document.getElementById("messages").appendChild(msgEl);
+        if (isADM) {
+          const btn = document.createElement("button");
+          btn.className = "delete-btn";
+          btn.innerText = "Apagar";
+          btn.onclick = () => db.ref("mensagens/" + child.key).remove();
+          div.appendChild(btn);
+        }
+
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+      });
     });
 
-    // Admin login
-    window.onload = () => {
-      const nome = prompt("Seu nome (Deixe em branco para anônimo):");
-      const senha = nome && adminUsers[nome] ? prompt("Senha do ADM:") : null;
+    document.getElementById("login-adm").onclick = () => {
+      document.getElementById("login-modal").style.display = "flex";
+    }
 
-      if (nome && senha && adminUsers[nome] === senha) {
-        isAdmin = true;
-        currentUser = nome;
-        alert("Logado como ADM!");
+    function loginADM() {
+      const user = document.getElementById("adm-username").value;
+      const pass = document.getElementById("adm-password").value;
+
+      const adms = {
+        "gremio": "02062010",
+        "paraná": "02062010"
+      };
+
+      if (adms[user.toLowerCase()] === pass) {
+        isADM = true;
+        admName = user;
+        document.getElementById("login-modal").style.display = "none";
+        alert("Logado como ADM: " + user);
+      } else {
+        alert("Usuário ou senha incorretos");
       }
-    };
+    }
   </script></body>
 </html>
