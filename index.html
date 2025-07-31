@@ -1,331 +1,202 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Chat de Sugestões do Grêmio</title>
   <style>
     body {
+      font-family: Arial, sans-serif;
+      background: #e8f0fe;
       margin: 0;
-      font-family: Arial;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      background: #ece5dd;
+      padding: 0;
     }
-
     header {
-      background: #075e54;
+      background: #0b57d0;
       color: white;
+      padding: 15px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 15px;
-      font-size: 20px;
     }
-
-    #loginBtn, #logoutBtn {
-      background: #128c7e;
-      border: none;
-      color: white;
-      padding: 8px 15px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    #chat {
-      flex: 1;
-      padding: 10px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .message {
-      background: #dcf8c6;
-      padding: 10px;
-      margin: 5px 0;
-      border-radius: 10px;
-      max-width: 70%;
-      position: relative;
-      word-wrap: break-word;
-      white-space: pre-wrap;
-    }
-
-    .deleteBtn {
-      display: none;
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      background: red;
-      border: none;
-      color: white;
-      border-radius: 5px;
-      font-size: 12px;
-      padding: 2px 6px;
-      cursor: pointer;
-    }
-
-    .message.admin .deleteBtn {
-      display: block;
-    }
-
-    footer {
-      display: flex;
-      padding: 10px;
-      background: #f0f0f0;
-    }
-
-    input {
-      flex: 1;
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 20px;
-      border: none;
-      outline: none;
-    }
-
-    button {
-      margin-left: 10px;
-      padding: 10px 15px;
-      font-size: 16px;
-      background: #075e54;
-      color: white;
-      border: none;
-      border-radius: 20px;
-      cursor: pointer;
-    }
-
-    /* Modal login */
-    #loginModal {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+    .chat-container {
+      max-width: 600px;
+      margin: 30px auto;
       background: white;
       padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-      display: none;
-      z-index: 999;
-      width: 300px;
+      border-radius: 8px;
     }
-
-    #loginModal input {
+    .message {
+      background: #f1f1f1;
+      padding: 10px;
       margin-bottom: 10px;
-      width: 100%;
-      padding: 8px;
       border-radius: 5px;
-      border: 1px solid #ccc;
-      font-size: 14px;
+      position: relative;
     }
-
-    #overlay {
+    .delete-btn {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      background: red;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #loginModal {
       position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
       background: rgba(0,0,0,0.4);
+      display: flex;
+      justify-content: center;
+      align-items: center;
       display: none;
-      z-index: 998;
+    }
+    #loginModal.active {
+      display: flex;
+    }
+    .login-box {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    #loginBtn {
+      cursor: pointer;
+      background: #0b57d0;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <span>Chat de Sugestões do Grêmio</span>
-    <div>
-      <button id="loginBtn">Login</button>
-      <button id="logoutBtn" style="display:none;">Sair</button>
-    </div>
-  </header>
+<header>
+  <h2>Chat de Sugestões do Grêmio</h2>
+  <button id="openLogin" style="padding: 10px;">Login</button>
+</header>
 
-  <div id="chat"></div>
+<div class="chat-container">
+  <div id="messages"></div>
+  <textarea id="messageInput" placeholder="Digite sua sugestão..."></textarea>
+  <button onclick="sendMessage()">Enviar</button>
+</div>
 
-  <footer>
-    <input type="text" id="messageInput" placeholder="Digite sua mensagem..." autocomplete="off" />
-    <button onclick="sendMessage()">Enviar</button>
-  </footer>
-
-  <!-- Modal login -->
-  <div id="overlay"></div>
-  <div id="loginModal">
-    <h3>Login Admin</h3>
-    <input type="text" id="userInput" placeholder="Usuário" autocomplete="off" />
-    <input type="password" id="passInput" placeholder="Senha" autocomplete="off" />
-    <button onclick="login()">Entrar</button>
+<div id="loginModal">
+  <div class="login-box">
+    <h3>Login</h3>
+    <input type="text" id="username" placeholder="Usuário"><br><br>
+    <input type="password" id="password" placeholder="Senha"><br><br>
+    <button onclick="doLogin()">Entrar</button>
   </div>
+</div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, push, onChildAdded, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-  <script>
-    // Sua configuração Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyD8HpvX2scRrV2Yhh_V8B3QMZIRwyR8gak",
-      authDomain: "chatanonimo-d1676.firebaseapp.com",
-      databaseURL: "https://chatanonimo-d1676-default-rtdb.firebaseio.com",
-      projectId: "chatanonimo-d1676",
-      storageBucket: "chatanonimo-d1676.firebasestorage.app",
-      messagingSenderId: "951790566544",
-      appId: "1:951790566544:web:4687d205d4673be5636c15",
-      measurementId: "G-XGGHD7E1TB"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyD8HpvX2scRrV2Yhh_V8B3QMZIRwyR8gak",
+    authDomain: "chatanonimo-d1676.firebaseapp.com",
+    databaseURL: "https://chatanonimo-d1676-default-rtdb.firebaseio.com",
+    projectId: "chatanonimo-d1676",
+    storageBucket: "chatanonimo-d1676.appspot.com",
+    messagingSenderId: "951790566544",
+    appId: "1:951790566544:web:4687d205d4673be5636c15",
+    measurementId: "G-XGGHD7E1TB"
+  };
 
-    // Inicializa Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const messagesRef = ref(db, "messages");
 
-    const chat = document.getElementById("chat");
+  const isAdmin = () => localStorage.getItem("logged") === "true";
+
+  const blockedWords = [
+    "puta", "puto", "fdp", "caralho", "carai", "porra", "bosta", "merda", "desgraça",
+    "cacete", "arrombado", "pqp", "foda", "fodase", "foda-se", "cu", "buceta", "vadia",
+    "vagabunda", "viado", "boiola", "corno", "safado", "safada", "bixa", "trouxa", "otário",
+    "otaria", "piranha", "escroto", "escrota", "cuzão", "babaca", "pau no cu", "pau no seu cu",
+    "krl", "krlh", "crlh", "vsf", "vtnc", "vai se fuder", "vai tomar no cu", "c@ralho", "c@r@lho", "caralhooo",
+    "fud3r", "fudido", "fudida", "p0rra", "poha", "kct", "k7", "fudido", "fudida", "f*dido", "f*dida", "cacet*"
+  ];
+
+  const sanitize = (text) => {
+    const norm = text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    for (let word of blockedWords) {
+      const pattern = new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, "gi");
+      if (pattern.test(norm)) return true;
+    }
+    return false;
+  };
+
+  function sendMessage() {
     const input = document.getElementById("messageInput");
-    const loginBtn = document.getElementById("loginBtn");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const loginModal = document.getElementById("loginModal");
-    const overlay = document.getElementById("overlay");
-
-    let isAdmin = false;
-
-    // Lista de palavrões e variações
-    function containsBadWords(text) {
-      const blacklist = [
-        "merda", "m3rda", "m3rd@", "bosta",
-        "porra", "p0rr@", "pqp",
-        "caralho", "crlh", "krl", "krll", "kralho",
-        "puta", "put@", "pvt@", "p4r1u", "pariu",
-        "fdp", "f.d.p", "f*d@", "foda", "f0d@", "fodase", "f@d@",
-        "desgraça", "dsg", "desgraca",
-        "viado", "veado", "viad@", "v1ad0",
-        "buceta", "bct", "bucet@", "b4c3t4",
-        "cu", "cuzão", "cuzao", "cuzin", "c*",
-        "corno", "kornu", "chifrudo"
-      ];
-
-      const normalized = text.toLowerCase().replace(/[^a-z0-9@]/gi, '');
-      return blacklist.some(word => normalized.includes(word));
+    const message = input.value.trim();
+    if (!message) return;
+    if (sanitize(message)) {
+      alert("Mensagem contém palavras inadequadas.");
+      return;
     }
+    push(messagesRef, { text: message });
+    input.value = "";
+  }
 
-    function sendMessage() {
-      const text = input.value.trim();
-      if (text === "") return;
+  function renderMessage(key, text) {
+    const container = document.getElementById("messages");
+    const msgDiv = document.createElement("div");
+    msgDiv.className = "message";
+    msgDiv.id = key;
+    msgDiv.textContent = text;
 
-      if (containsBadWords(text)) {
-        alert("Mensagem bloqueada: linguagem inadequada.");
-        input.value = "";
-        return;
-      }
-
-      db.ref("messages").push({
-        text: text,
-        timestamp: Date.now()
-      });
-
-      input.value = "";
-    }
-
-    input.addEventListener("keypress", e => {
-      if (e.key === "Enter") sendMessage();
-    });
-
-    function createMessageElement(key, msg) {
-      const div = document.createElement("div");
-      div.className = "message";
-      div.textContent = msg.text;
-      div.dataset.key = key;
-
-      if (isAdmin) {
-        div.classList.add("admin");
-        const del = document.createElement("button");
-        del.className = "deleteBtn";
-        del.textContent = "Apagar";
-        del.onclick = () => deleteMessage(key, div);
-        div.appendChild(del);
-      }
-
-      chat.appendChild(div);
-      chat.scrollTop = chat.scrollHeight;
-    }
-
-    // Escuta novas mensagens em tempo real
-    db.ref("messages").on("child_added", snapshot => {
-      const key = snapshot.key;
-      const msg = snapshot.val();
-      createMessageElement(key, msg);
-    });
-
-    // Remove mensagem na tela quando apagada no DB
-    db.ref("messages").on("child_removed", snapshot => {
-      const key = snapshot.key;
-      const el = document.querySelector(`.message[data-key="${key}"]`);
-      if (el) el.remove();
-    });
-
-    function deleteMessage(key, element) {
-      if (confirm("Deseja apagar esta mensagem para todos?")) {
-        db.ref("messages/" + key).remove();
-      }
-    }
-
-    // Controle do modal login
-    loginBtn.onclick = () => {
-      overlay.style.display = "block";
-      loginModal.style.display = "block";
-      document.getElementById("userInput").value = "";
-      document.getElementById("passInput").value = "";
-    };
-
-    logoutBtn.onclick = () => {
-      isAdmin = false;
-      loginBtn.style.display = "inline-block";
-      logoutBtn.style.display = "none";
-      overlay.style.display = "none";
-      loginModal.style.display = "none";
-      refreshMessagesAsNormal();
-    };
-
-    overlay.onclick = () => {
-      overlay.style.display = "none";
-      loginModal.style.display = "none";
-    };
-
-    function login() {
-      const user = document.getElementById("userInput").value;
-      const pass = document.getElementById("passInput").value;
-
-      if (user === "gremio" && pass === "02062010") {
-        isAdmin = true;
-        loginModal.style.display = "none";
-        overlay.style.display = "none";
-        loginBtn.style.display = "none";
-        logoutBtn.style.display = "inline-block";
-        refreshMessagesAsAdmin();
-      } else {
-        alert("Usuário ou senha incorretos.");
-      }
-    }
-
-    function refreshMessagesAsAdmin() {
-      document.querySelectorAll(".message").forEach(el => {
-        el.classList.add("admin");
-        if (!el.querySelector(".deleteBtn")) {
-          const key = el.dataset.key;
-          const del = document.createElement("button");
-          del.className = "deleteBtn";
-          del.textContent = "Apagar";
-          del.onclick = () => deleteMessage(key, el);
-          el.appendChild(del);
+    if (isAdmin()) {
+      const del = document.createElement("button");
+      del.textContent = "Apagar";
+      del.className = "delete-btn";
+      del.onclick = () => {
+        if (confirm("Apagar essa mensagem para todos?")) {
+          remove(ref(db, `messages/${key}`));
         }
-      });
+      };
+      msgDiv.appendChild(del);
     }
 
-    function refreshMessagesAsNormal() {
-      document.querySelectorAll(".message").forEach(el => {
-        el.classList.remove("admin");
-        const delBtn = el.querySelector(".deleteBtn");
-        if (delBtn) delBtn.remove();
-      });
+    container.appendChild(msgDiv);
+  }
+
+  onChildAdded(messagesRef, (data) => {
+    const { text } = data.val();
+    renderMessage(data.key, text);
+  });
+
+  function doLogin() {
+    const u = document.getElementById("username").value;
+    const p = document.getElementById("password").value;
+    if (u === "gremio" && p === "02062010") {
+      localStorage.setItem("logged", "true");
+      alert("Logado com sucesso.");
+      location.reload();
+    } else {
+      alert("Usuário ou senha incorretos.");
     }
-  </script>
+  }
+
+  document.getElementById("openLogin").onclick = () => {
+    document.getElementById("loginModal").classList.add("active");
+  };
+</script>
+
 </body>
 </html>
