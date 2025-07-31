@@ -310,8 +310,8 @@
       div.innerHTML += `<strong>${escapeHTML(msg.nome)}</strong>: ${escapeHTML(msg.texto)}`;
       div.innerHTML += `<span class="time">${msg.horario}</span>`;
       
-      // Mostra o botão de apagar apenas para administradores
-      if (loggedADMs.includes(userName) && msg.nome !== userName) {
+      // Mostra o botão de apagar apenas para administradores (incluindo mensagens próprias)
+      if (loggedADMs.includes(userName)) {
         const delBtn = document.createElement("button");
         delBtn.className = "delete-btn";
         delBtn.textContent = "Apagar";
