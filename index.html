@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Caixa de Sugestões</title>
+  <title>Sugestões</title>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <style>
@@ -138,7 +138,7 @@
 <body>
   <div class="chat-container">
     <div class="header">
-      <h2>Caixa de Sugestões</h2>
+      <h2>Caixa de Sugestões Para Melhorias na Escola</h2>
       <button class="adm-login-btn" onclick="alternarLogin()">Login ADM</button>
     </div>
     <div id="notification" class="notification"></div>
@@ -187,7 +187,7 @@
     window.onload = () => {
       const nome = prompt("Coloque seu nome (ou deixe em branco para anônimo):");
       nomeUsuario = nome ? nome : "Anônimo";
-      document.getElementById("notification").textContent = `Olá ${nomeUsuario}! Sua mensagem é 100% anônima e não será rastreada.`;
+      document.getElementById("notification").textContent = `Olá ${nomeUsuario}! Compartilhe conosco sua idéia/sugestão :)`;
       carregarMensagens();
     };
 
