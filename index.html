@@ -206,6 +206,7 @@
       document.getElementById("notification").textContent = `Olá ${nomeUsuario}! Compartilhe sua sugestão abaixo.`;
       carregarMensagens();
     };
+    <script>
     function contemPalavroes(texto) {
       const palavras = ["idiota", "burro", "merda", "desgraça", "fdp", "viado", "bosta", "porra", "Puta", "Caralho", "Burra", "Bct", "Lazarento", "Corno", "Corna", "Sexo", "Putaria", "Puto", "Chifrudo", "Mãe", "Pai", "Pinto", "Pal", "Pênis", "Buceta", "vai se fuder", "tesao", "pelada", "xxx", "porno"];
       const normalizado = texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/gi, "");
@@ -215,12 +216,21 @@
       const input = document.getElementById("messageInput");
       const texto = input.value.trim();
       const confirm = document.getElementById("confirmMsg");
+      
       if (!texto) return;
+      
       if (contemPalavroes(texto)) {
         confirm.innerText = "Por favor, evite palavrões.";
         confirm.style.color = "red";
         return;
       }
+
+      confirm.innerText = "Mensagem enviada!";
+      confirm.style.color = "green";
+      input.value = " ";
+    }
+  </script>
+  
       const remetente = isADM ? `ADM: ${nomeADM.toUpperCase()}` : nomeUsuario;
       db.ref("mensagens").push({ nome: remetente, texto, adm: isADM });
       input.value = "";
