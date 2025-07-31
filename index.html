@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Chat de Sugestões do Grêmio</title>
   <style>
     body {
@@ -49,6 +49,8 @@
       border-radius: 10px;
       max-width: 70%;
       position: relative;
+      word-wrap: break-word;
+      white-space: pre-wrap;
     }
 
     .deleteBtn {
@@ -95,7 +97,7 @@
       cursor: pointer;
     }
 
-    /* Janela de login */
+    /* Modal login */
     #loginModal {
       position: fixed;
       top: 50%;
@@ -107,6 +109,7 @@
       box-shadow: 0 0 10px rgba(0,0,0,0.2);
       display: none;
       z-index: 999;
+      width: 300px;
     }
 
     #loginModal input {
@@ -115,14 +118,13 @@
       padding: 8px;
       border-radius: 5px;
       border: 1px solid #ccc;
+      font-size: 14px;
     }
 
     #overlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       background: rgba(0,0,0,0.4);
       display: none;
       z-index: 998;
@@ -142,16 +144,16 @@
   <div id="chat"></div>
 
   <footer>
-    <input type="text" id="messageInput" placeholder="Digite sua mensagem...">
+    <input type="text" id="messageInput" placeholder="Digite sua mensagem..." autocomplete="off" />
     <button onclick="sendMessage()">Enviar</button>
   </footer>
 
-  <!-- Modal de login -->
+  <!-- Modal login -->
   <div id="overlay"></div>
   <div id="loginModal">
     <h3>Login Admin</h3>
-    <input type="text" id="userInput" placeholder="Usuário">
-    <input type="password" id="passInput" placeholder="Senha">
+    <input type="text" id="userInput" placeholder="Usuário" autocomplete="off" />
+    <input type="password" id="passInput" placeholder="Senha" autocomplete="off" />
     <button onclick="login()">Entrar</button>
   </div>
 
@@ -160,28 +162,59 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
   <script>
-    // 🔄 Cole aqui sua config do Firebase:
+    // Sua configuração Firebase
     const firebaseConfig = {
-  apiKey: "AIzaSyD8HpvX2scRrV2Yhh_V8B3QMZIRwyR8gak",
-  authDomain: "chatanonimo-d1676.firebaseapp.com",
-  databaseURL: "https://chatanonimo-d1676-default-rtdb.firebaseio.com",
-  projectId: "chatanonimo-d1676",
-  storageBucket: "chatanonimo-d1676.firebasestorage.app",
-  messagingSenderId: "951790566544",
-  appId: "1:951790566544:web:4687d205d4673be5636c15",
-  measurementId: "G-XGGHD7E1TB"
-};
+      apiKey: "AIzaSyD8HpvX2scRrV2Yhh_V8B3QMZIRwyR8gak",
+      authDomain: "chatanonimo-d1676.firebaseapp.com",
+      databaseURL: "https://chatanonimo-d1676-default-rtdb.firebaseio.com",
+      projectId: "chatanonimo-d1676",
+      storageBucket: "chatanonimo-d1676.firebasestorage.app",
+      messagingSenderId: "951790566544",
+      appId: "1:951790566544:web:4687d205d4673be5636c15",
+      measurementId: "G-XGGHD7E1TB"
+    };
+
+    // Inicializa Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
     const chat = document.getElementById("chat");
     const input = document.getElementById("messageInput");
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const loginModal = document.getElementById("loginModal");
+    const overlay = document.getElementById("overlay");
 
     let isAdmin = false;
+
+    // Lista de palavrões e variações
+    function containsBadWords(text) {
+      const blacklist = [
+        "merda", "m3rda", "m3rd@", "bosta",
+        "porra", "p0rr@", "pqp",
+        "caralho", "crlh", "krl", "krll", "kralho",
+        "puta", "put@", "pvt@", "p4r1u", "pariu",
+        "fdp", "f.d.p", "f*d@", "foda", "f0d@", "fodase", "f@d@",
+        "desgraça", "dsg", "desgraca",
+        "viado", "veado", "viad@", "v1ad0",
+        "buceta", "bct", "bucet@", "b4c3t4",
+        "cu", "cuzão", "cuzao", "cuzin", "c*",
+        "corno", "kornu", "chifrudo"
+      ];
+
+      const normalized = text.toLowerCase().replace(/[^a-z0-9@]/gi, '');
+      return blacklist.some(word => normalized.includes(word));
+    }
 
     function sendMessage() {
       const text = input.value.trim();
       if (text === "") return;
+
+      if (containsBadWords(text)) {
+        alert("Mensagem bloqueada: linguagem inadequada.");
+        input.value = "";
+        return;
+      }
 
       db.ref("messages").push({
         text: text,
@@ -214,12 +247,14 @@
       chat.scrollTop = chat.scrollHeight;
     }
 
+    // Escuta novas mensagens em tempo real
     db.ref("messages").on("child_added", snapshot => {
       const key = snapshot.key;
       const msg = snapshot.val();
       createMessageElement(key, msg);
     });
 
+    // Remove mensagem na tela quando apagada no DB
     db.ref("messages").on("child_removed", snapshot => {
       const key = snapshot.key;
       const el = document.querySelector(`.message[data-key="${key}"]`);
@@ -232,15 +267,12 @@
       }
     }
 
-    // Login modal
-    const loginBtn = document.getElementById("loginBtn");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const loginModal = document.getElementById("loginModal");
-    const overlay = document.getElementById("overlay");
-
+    // Controle do modal login
     loginBtn.onclick = () => {
       overlay.style.display = "block";
       loginModal.style.display = "block";
+      document.getElementById("userInput").value = "";
+      document.getElementById("passInput").value = "";
     };
 
     logoutBtn.onclick = () => {
@@ -250,6 +282,11 @@
       overlay.style.display = "none";
       loginModal.style.display = "none";
       refreshMessagesAsNormal();
+    };
+
+    overlay.onclick = () => {
+      overlay.style.display = "none";
+      loginModal.style.display = "none";
     };
 
     function login() {
