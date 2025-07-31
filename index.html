@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Site de Sugestões do Grêmio</title>
+  <title>Caixa de Sugestões</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <style>
     body {
       margin: 0;
@@ -136,10 +138,10 @@
 <body>
   <div class="chat-container">
     <div class="header">
-      <h2>Caixa de Sugestões Para Melhorias Ou Coisas Novas Na Escola - Grêmio do Villaça</h2>
-      <button class="adm-login-btn">Login ADM</button>
+      <h2>Caixa de Sugestões</h2>
+      <button class="adm-login-btn" onclick="abrirLogin()">Login ADM</button>
     </div>
-    <div id="notification" class="notification">Nos mande sua sugestão ou ideia :)</div>
+    <div id="notification" class="notification"></div>
     <div class="messages" id="messages"></div>
     <div class="input-section">
       <textarea id="messageInput" rows="4" placeholder="Digite sua sugestão..."></textarea>
@@ -150,7 +152,7 @@
 
   <div class="login-modal" id="loginModal">
     <div class="login-box">
-      <span class="close-login" onclick="closeLogin()">❌</span>
+      <span class="close-login" onclick="fecharLogin()">❌</span>
       <h3>Login ADM</h3>
       <input type="text" id="admUser" placeholder="Usuário">
       <input type="password" id="admPass" placeholder="Senha">
@@ -159,10 +161,24 @@
   </div>
 
   <script>
+    // 🔥 Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyD8HpvX2scRrV2Yhh_V8B3QMZIRwyR8gak",
+      authDomain: "chatanonimo-d1676.firebaseapp.com",
+      databaseURL: "https://chatanonimo-d1676-default-rtdb.firebaseio.com",
+      projectId: "chatanonimo-d1676",
+      storageBucket: "chatanonimo-d1676.firebasestorage.app",
+      messagingSenderId: "951790566544",
+      appId: "1:951790566544:web:4687d205d4673be5636c15",
+      measurementId: "G-XGGHD7E1TB"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
     let nomeUsuario = "";
     let isADM = false;
     let nomeADM = "";
-    const mensagens = [];
 
     const admCredenciais = {
       "Gabriel": "02062010",
@@ -170,8 +186,10 @@
     };
 
     window.onload = () => {
-      const nome = prompt("Coloque seu nome (ou deixe em branco para anônimo)");
+      const nome = prompt("Coloque seu nome (ou deixe em branco para anônimo):");
       nomeUsuario = nome ? nome : "Anônimo";
+      document.getElementById("notification").textContent = `Olá ${nomeUsuario}! Sua mensagem é 100% anônima e não será rastreada.`;
+      carregarMensagens();
     };
 
     function contemPalavroes(texto) {
@@ -194,82 +212,75 @@
       }
 
       const remetente = isADM ? `ADM: ${nomeADM.toUpperCase()}` : nomeUsuario;
-      mensagens.push({ nome: remetente, texto, adm: isADM });
+      const novaMsg = {
+        nome: remetente,
+        texto: texto,
+        adm: isADM
+      };
+
+      db.ref("mensagens").push(novaMsg);
       input.value = "";
       confirm.innerText = "Mensagem enviada com sucesso!";
       confirm.style.color = "green";
-      mostrarMensagens();
     }
 
-    function mostrarMensagens() {
-      const container = document.getElementById("messages");
-      container.innerHTML = "";
+    function carregarMensagens() {
+      db.ref("mensagens").on("value", snapshot => {
+        const container = document.getElementById("messages");
+        container.innerHTML = "";
+        const dados = snapshot.val();
 
-      mensagens.forEach((msg, index) => {
-        const div = document.createElement("div");
-        div.className = "message";
-        if (msg.adm) div.classList.add("adm");
+        for (let id in dados) {
+          const msg = dados[id];
+          const div = document.createElement("div");
+          div.className = "message";
+          if (msg.adm) div.classList.add("adm");
 
-        const user = document.createElement("div");
-        user.className = "username";
-        user.textContent = msg.nome;
+          const user = document.createElement("div");
+          user.className = "username";
+          user.textContent = msg.nome;
 
-        const texto = document.createElement("div");
-        texto.textContent = msg.texto;
+          const texto = document.createElement("div");
+          texto.textContent = msg.texto;
 
-        if (isADM) {
-          const btn = document.createElement("button");
-          btn.className = "delete-btn";
-          btn.textContent = "Apagar";
-          btn.onclick = () => {
-            mensagens.splice(index, 1);
-            mostrarMensagens();
-          };
-          div.appendChild(btn);
+          div.appendChild(user);
+          div.appendChild(texto);
+
+          if (isADM) {
+            const btn = document.createElement("button");
+            btn.className = "delete-btn";
+            btn.textContent = "🗑️";
+            btn.onclick = () => db.ref("mensagens/" + id).remove();
+            div.appendChild(btn);
+          }
+
+          container.appendChild(div);
         }
-
-        div.appendChild(user);
-        div.appendChild(texto);
-        container.appendChild(div);
       });
-
-      container.scrollTop = container.scrollHeight;
     }
 
-    function openLogin() {
+        function abrirLogin() {
       document.getElementById("loginModal").style.display = "flex";
     }
 
-    function closeLogin() {
+    function fecharLogin() {
       document.getElementById("loginModal").style.display = "none";
     }
 
     function loginADM() {
-      const u = document.getElementById("admUser").value;
-      const p = document.getElementById("admPass").value;
+      const user = document.getElementById("admUser").value.trim();
+      const pass = document.getElementById("admPass").value.trim();
 
-      if (admCredenciais[u] && admCredenciais[u] === p) {
+      if (admCredenciais[user] && admCredenciais[user] === pass) {
         isADM = true;
-        nomeADM = u;
-        alert("Você fez login como ADM: " + nomeADM);
-        closeLogin();
-        document.querySelector(".adm-login-btn").textContent = "Sair do Login ADM";
-        mostrarMensagens();
+        nomeADM = user;
+        fecharLogin();
+        alert("Login ADM realizado com sucesso!");
+        carregarMensagens(); // recarrega com botões de apagar
       } else {
-        alert("Usuário ou senha incorretos.");
+        alert("Credenciais inválidas.");
       }
     }
-
-    document.querySelector(".adm-login-btn").addEventListener("click", () => {
-      if (isADM) {
-        isADM = false;
-        nomeADM = "";
-        document.querySelector(".adm-login-btn").textContent = "Login ADM";
-        mostrarMensagens();
-      } else {
-        openLogin();
-      }
-    });
   </script>
 </body>
 </html>
