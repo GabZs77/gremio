@@ -1,187 +1,186 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Chat de Sugestões do Grêmio</title>
-<style>
-  * {margin:0; padding:0; box-sizing:border-box;}
-  body {font-family: Arial,sans-serif; background:#ece5dd;}
-  .chat-container {
-    max-width: 600px;
-    margin: 50px auto;
-    height: 90vh;
-    display: flex;
-    flex-direction: column;
-    border-radius: 8px;
-    background: #fff;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  }
-  .header {
-    background: #075e54;
-    color: white;
-    padding: 15px;
-    font-weight: bold;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    user-select:none;
-  }
-  .header .buttons {
-    display: flex;
-    gap: 10px;
-  }
-  button {
-    cursor: pointer;
-    border: none;
-    border-radius: 4px;
-    padding: 6px 12px;
-    font-weight: 600;
-    transition: background-color 0.3s ease;
-  }
-  button#loginAdmBtn {
-    background: #128c7e;
-    color: white;
-  }
-  button#logoutAdmBtn {
-    background: #f44336;
-    color: white;
-    display: none;
-  }
-  .messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 15px;
-    background: #e5ddd5;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .message {
-    max-width: 75%;
-    background: #dcf8c6;
-    padding: 10px 15px;
-    border-radius: 10px;
-    position: relative;
-    font-size: 14px;
-    word-break: break-word;
-  }
-  .message.adm {
-    background: #bee1ff;
-  }
-  .message .adm-tag {
-    position: absolute;
-    top: -14px;
-    right: 10px;
-    background: #2196f3;
-    color: white;
-    padding: 2px 6px;
-    font-size: 10px;
-    border-radius: 4px;
-    user-select:none;
-  }
-  .message .time {
-    display: block;
-    font-size: 10px;
-    color: #555;
-    margin-top: 5px;
-    text-align: right;
-  }
-  .message button.delete-btn {
-    position: absolute;
-    bottom: 6px;
-    left: 10px;
-    background: #f44336;
-    border-radius: 4px;
-    padding: 2px 6px;
-    font-size: 12px;
-    color: white;
-    cursor: pointer;
-  }
-  .input-area {
-    display: flex;
-    border-top: 1px solid #ccc;
-    padding: 10px;
-  }
-  #messageInput {
-    flex: 1;
-    padding: 10px;
-    font-size: 16px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    outline: none;
-  }
-  #sendBtn {
-    background: #075e54;
-    color: white;
-    border: none;
-    padding: 0 20px;
-    margin-left: 10px;
-    border-radius: 4px;
-    font-weight: bold;
-  }
-  #loginModal {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    padding: 25px 30px 30px 30px;
-    border-radius: 8px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.3);
-    z-index: 9999;
-    width: 320px;
-  }
-  #loginModal h3 {
-    margin-bottom: 15px;
-    user-select:none;
-  }
-  #loginModal input {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 12px;
-    font-size: 14px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-  }
-  #loginModal button {
-    width: 100%;
-    padding: 10px;
-    background: #128c7e;
-    color: white;
-    font-weight: bold;
-  }
-  #closeModalBtn {
-    position: absolute;
-    right: 15px;
-    top: 12px;
-    font-size: 20px;
-    font-weight: bold;
-    color: #888;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    user-select:none;
-  }
-  /* Overlay for modal */
-  #modalOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right:0;
-    bottom:0;
-    background: rgba(0,0,0,0.3);
-    z-index: 9998;
-    display: none;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chat de Sugestões do Grêmio</title>
+  <style>
+    * {margin:0; padding:0; box-sizing:border-box;}
+    body {font-family: Arial,sans-serif; background:#ece5dd;}
+    .chat-container {
+      max-width: 600px;
+      margin: 50px auto;
+      height: 90vh;
+      display: flex;
+      flex-direction: column;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .header {
+      background: #075e54;
+      color: white;
+      padding: 15px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select:none;
+    }
+    .header .buttons {
+      display: flex;
+      gap: 10px;
+    }
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 4px;
+      padding: 6px 12px;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+    }
+    button#loginAdmBtn {
+      background: #128c7e;
+      color: white;
+    }
+    button#logoutAdmBtn {
+      background: #f44336;
+      color: white;
+      display: none;
+    }
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 15px;
+      background: #e5ddd5;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .message {
+      max-width: 75%;
+      background: #dcf8c6;
+      padding: 10px 15px;
+      border-radius: 10px;
+      position: relative;
+      font-size: 14px;
+      word-break: break-word;
+    }
+    .message.adm {
+      background: #bee1ff;
+    }
+    .message .adm-tag {
+      position: absolute;
+      top: -14px;
+      right: 10px;
+      background: #2196f3;
+      color: white;
+      padding: 2px 6px;
+      font-size: 10px;
+      border-radius: 4px;
+      user-select:none;
+    }
+    .message .time {
+      display: block;
+      font-size: 10px;
+      color: #555;
+      margin-top: 5px;
+      text-align: right;
+    }
+    .message button.delete-btn {
+      position: absolute;
+      bottom: 6px;
+      left: 10px;
+      background: #f44336;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 12px;
+      color: white;
+      cursor: pointer;
+    }
+    .input-area {
+      display: flex;
+      border-top: 1px solid #ccc;
+      padding: 10px;
+    }
+    #messageInput {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+    #sendBtn {
+      background: #075e54;
+      color: white;
+      border: none;
+      padding: 0 20px;
+      margin-left: 10px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    #loginModal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 25px 30px 30px 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+      z-index: 9999;
+      width: 320px;
+    }
+    #loginModal h3 {
+      margin-bottom: 15px;
+      user-select:none;
+    }
+    #loginModal input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 12px;
+      font-size: 14px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    #loginModal button {
+      width: 100%;
+      padding: 10px;
+      background: #128c7e;
+      color: white;
+      font-weight: bold;
+    }
+    #closeModalBtn {
+      position: absolute;
+      right: 15px;
+      top: 12px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #888;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      user-select:none;
+    }
+    #modalOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right:0;
+      bottom:0;
+      background: rgba(0,0,0,0.3);
+      z-index: 9998;
+      display: none;
+    }
+  </style>
 </head>
 <body>
 
 <div class="chat-container">
   <div class="header">
-    Chat de Sugestões do Grêmio
+    Grêmio Força Jovem - E.E. Sebastião Vilaça
     <div class="buttons">
       <button id="loginAdmBtn">Login ADM</button>
       <button id="logoutAdmBtn">Sair ADM</button>
@@ -189,22 +188,20 @@
   </div>
   <div class="messages" id="messages"></div>
   <div class="input-area">
-    <input id="messageInput" placeholder="Digite sua mensagem... 😊" autocomplete="off" />
+    <input id="messageInput" placeholder="Digite sua sugestão... 😊" autocomplete="off" />
     <button id="sendBtn">Enviar</button>
   </div>
 </div>
 
 <div id="modalOverlay"></div>
-
 <div id="loginModal">
-  <button id="closeModalBtn" title="Fechar">×</button>
+  <button id="closeModalBtn">×</button>
   <h3>Login ADM</h3>
-  <input id="admUser" type="text" placeholder="Usuário" autocomplete="off"/>
-  <input id="admPass" type="password" placeholder="Senha" autocomplete="off"/>
+  <input id="admUser" type="text" placeholder="Usuário" />
+  <input id="admPass" type="password" placeholder="Senha" />
   <button id="admLoginBtn">Entrar</button>
 </div>
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
@@ -214,36 +211,25 @@
     authDomain: "chatanonimo-d1676.firebaseapp.com",
     databaseURL: "https://chatanonimo-d1676-default-rtdb.firebaseio.com",
     projectId: "chatanonimo-d1676",
-    storageBucket: "chatanonimo-d1676.firebasestorage.app",
+    storageBucket: "chatanonimo-d1676.appspot.com",
     messagingSenderId: "951790566544",
-    appId: "1:951790566544:web:4687d205d4673be5636c15",
-    measurementId: "G-XGGHD7E1TB"
+    appId: "1:951790566544:web:4687d205d4673be5636c15"
   };
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
-
-  // ADMs cadastrados
-  const adms = {
-    "Paraná": "02062010",
-    "Gabriel": "02062010"
-  };
-
-  // Lista de ADMs logados
+  const adms = { "Paraná": "02062010", "Gabriel": "02062010" };
   let loggedADMs = [];
-
-  // Nome do usuário atual
   let userName = "";
 
-  // Pede o nome na entrada
+  // Solicita nome
   window.onload = () => {
     setTimeout(() => {
-      const namePrompt = prompt("Digite seu nome (deixe em branco para anônimo):");
-      userName = namePrompt && namePrompt.trim() !== "" ? namePrompt.trim() : "Anônimo";
-    }, 100);
+      const nome = prompt("Coloque seu nome (ou deixe em branco para anônimo):");
+      userName = nome && nome.trim() !== "" ? nome.trim() : "Anônimo";
+    }, 200);
   };
 
-  // Elementos DOM
   const messagesDiv = document.getElementById("messages");
   const messageInput = document.getElementById("messageInput");
   const sendBtn = document.getElementById("sendBtn");
@@ -256,43 +242,32 @@
   const admPassInput = document.getElementById("admPass");
   const admLoginBtn = document.getElementById("admLoginBtn");
 
-  // Função para mostrar modal
-  function openModal() {
+  loginAdmBtn.onclick = () => {
     loginModal.style.display = "block";
     modalOverlay.style.display = "block";
-  }
-
-  // Fechar modal
-  function closeModal() {
+  };
+  closeModalBtn.onclick = modalOverlay.onclick = () => {
     loginModal.style.display = "none";
     modalOverlay.style.display = "none";
     admUserInput.value = "";
     admPassInput.value = "";
-  }
+  };
 
-  loginAdmBtn.onclick = () => openModal();
-  closeModalBtn.onclick = () => closeModal();
-  modalOverlay.onclick = () => closeModal();
-
-  // Login ADM
   admLoginBtn.onclick = () => {
     const user = admUserInput.value.trim();
     const pass = admPassInput.value;
-
-    if(adms[user] && adms[user] === pass) {
-      if(!loggedADMs.includes(user)) loggedADMs.push(user);
+    if (adms[user] && adms[user] === pass) {
+      if (!loggedADMs.includes(user)) loggedADMs.push(user);
       userName = user;
       updateAdminButtons();
-      alert(`Logado como ADM: ${user}`);
-      closeModal();
+      alert(`Você fez login como ${user}`);
+      closeModalBtn.click();
     } else {
-      alert("Usuário ou senha incorretos!");
+      alert("Usuário ou senha incorretos.");
     }
   };
 
-  // Logout ADM
   logoutAdmBtn.onclick = () => {
-    // Remove o userName dos ADMs logados
     loggedADMs = loggedADMs.filter(adm => adm !== userName);
     userName = "Anônimo";
     updateAdminButtons();
@@ -300,40 +275,39 @@
   };
 
   function updateAdminButtons() {
-    if(loggedADMs.length > 0) {
-      logoutAdmBtn.style.display = "inline-block";
-      loginAdmBtn.style.display = "none";
-    } else {
-      logoutAdmBtn.style.display = "none";
-      loginAdmBtn.style.display = "inline-block";
-    }
+    loginAdmBtn.style.display = loggedADMs.length > 0 ? "none" : "inline-block";
+    logoutAdmBtn.style.display = loggedADMs.length > 0 ? "inline-block" : "none";
   }
 
-  // Enviar mensagem
-  sendBtn.onclick = sendMessage;
+  sendBtn.onclick = enviarMensagem;
   messageInput.addEventListener("keydown", e => {
-    if(e.key === "Enter") sendMessage();
+    if (e.key === "Enter") enviarMensagem();
   });
 
-  function sendMessage() {
-    const text = messageInput.value.trim();
-    if(!text) return;
+  function contemPalavroes(texto) {
+    const palavrasProibidas = ["palavrão1", "palavrão2", "fdp", "pqp", "vsfd", "carai", "merda", "bosta"];
+    const textoLimpo = texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s]/g, "");
+    return palavrasProibidas.some(p => textoLimpo.includes(p));
+  }
 
-    const now = new Date();
-    const time = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-
+  function enviarMensagem() {
+    const texto = messageInput.value.trim();
+    if (!texto) return;
+    if (contemPalavroes(texto)) {
+      alert("Evite palavrões, por favor.");
+      return;
+    }
+    const horario = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     db.ref("mensagens").push({
       nome: userName,
-      texto: text,
+      texto,
       adm: loggedADMs.includes(userName),
-      horario: time,
+      horario,
       timestamp: Date.now()
     });
-
     messageInput.value = "";
   }
 
-  // Atualiza a lista de mensagens do Firebase em tempo real
   db.ref("mensagens").orderByChild("timestamp").on("value", snapshot => {
     messagesDiv.innerHTML = "";
     snapshot.forEach(child => {
@@ -341,43 +315,36 @@
       const key = child.key;
 
       const div = document.createElement("div");
-      div.classList.add("message");
-      if(msg.adm) div.classList.add("adm");
+      div.className = "message";
+      if (msg.adm) div.classList.add("adm");
 
-      // Tag ADM se for admin
-      if(msg.adm) {
-        const admTag = document.createElement("div");
-        admTag.className = "adm-tag";
-        admTag.textContent = "ADM";
-        div.appendChild(admTag);
+      if (msg.adm) {
+        const tag = document.createElement("div");
+        tag.className = "adm-tag";
+        tag.textContent = "ADM";
+        div.appendChild(tag);
       }
 
-      div.innerHTML += `<strong>${escapeHTML(msg.nome)}:</strong> ${escapeHTML(msg.texto)}`;
+      div.innerHTML += `<strong>${escapeHTML(msg.nome)}</strong>: ${escapeHTML(msg.texto)}`;
       div.innerHTML += `<span class="time">${msg.horario}</span>`;
 
-      // Se quem vê é ADM, mostra botão apagar
-      if(loggedADMs.length > 0) {
-        const delBtn = document.createElement("button");
-        delBtn.className = "delete-btn";
-        delBtn.textContent = "Apagar";
-        delBtn.onclick = () => {
-          if(confirm("Quer mesmo apagar essa mensagem?")) {
-            db.ref("mensagens/" + key).remove();
-          }
-        };
-        div.appendChild(delBtn);
-      }
+      const delBtn = document.createElement("button");
+      delBtn.className = "delete-btn";
+      delBtn.textContent = "Apagar";
+      delBtn.onclick = () => {
+        if (confirm("Quer mesmo apagar essa mensagem?")) {
+          db.ref("mensagens/" + key).remove();
+        }
+      };
+      div.appendChild(delBtn);
 
       messagesDiv.appendChild(div);
     });
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   });
 
-  // Escapa HTML para evitar injeção (ex: se digitarem <script>)
   function escapeHTML(str) {
-    return str.replace(/[&<>"']/g, function(m) {
-      return {'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[m];
-    });
+    return str.replace(/[&<>"']/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[m]));
   }
 </script>
 
