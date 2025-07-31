@@ -207,7 +207,7 @@
       carregarMensagens();
     };
     function contemPalavroes(texto) {
-      const palavras = ["palavrão", "idiota", "burro", "merda", "desgraça", "fdp", "viado", "bosta", "porra"];
+      const palavras = ["idiota", "burro", "merda", "desgraça", "fdp", "viado", "bosta", "porra", "Puta", "Caralho", "Burra", "Bct", "Lazarento", "Corno", "Corna", "Sexo", "Putaria", "Puto", "Chifrudo", "Mãe", "Pai", "Pinto", "Pal", "Pênis", "Buceta", "vai se fuder", "tesao", "pelada", "xxx", "porno"];
       const normalizado = texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/gi, "");
       return palavras.some(p => normalizado.includes(p));
     }
