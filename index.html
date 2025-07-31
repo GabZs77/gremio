@@ -22,6 +22,20 @@
       text-align: center;
       font-weight: bold;
       font-size: 18px;
+      position: relative;
+    }
+    #logoutBtn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: #c62828;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-weight: bold;
+      padding: 6px 12px;
+      cursor: pointer;
+      display: none;
     }
     #chat {
       flex: 1;
@@ -39,6 +53,7 @@
       background-color: #ffffff;
       box-shadow: 0 1px 2px rgba(0,0,0,0.1);
       position: relative;
+      word-break: break-word;
     }
     .msg.adm {
       align-self: flex-end;
@@ -56,6 +71,7 @@
       color: #00796b;
       font-weight: bold;
       margin-bottom: 3px;
+      user-select: none;
     }
     #inputArea {
       display: flex;
@@ -69,6 +85,8 @@
       border-radius: 8px;
       border: 1px solid #ccc;
       resize: none;
+      font-size: 16px;
+      font-family: Arial, sans-serif;
     }
     button {
       background-color: #25d366;
@@ -78,22 +96,34 @@
       padding: 10px 15px;
       font-weight: bold;
       cursor: pointer;
+      font-size: 16px;
+      user-select: none;
+    }
+    button:hover {
+      background-color: #1ebe57;
     }
     #aviso {
       text-align: center;
       font-size: 12px;
       color: gray;
       margin: 5px 0;
+      user-select: none;
     }
     #loginArea {
       padding: 20px;
       text-align: center;
+      background: #fff;
+      border-top: 1px solid #ccc;
     }
-    #logoutBtn {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: #c62828;
+    #loginArea input {
+      width: 80%;
+      max-width: 300px;
+      padding: 10px;
+      margin: 8px 0;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-family: Arial, sans-serif;
     }
   </style>
 </head>
@@ -101,43 +131,55 @@
 
   <header>
     Grêmio Força Jovem - E.E. Sebastião Vilaça
-    <button id="logoutBtn" style="display:none;">Sair</button>
+    <button id="logoutBtn">Sair</button>
   </header>
 
   <div id="chat"></div>
 
   <div id="aviso">Sua mensagem é 100% anônima e não será rastreada.</div>
 
-  <div id="inputArea">
-    <textarea id="mensagem" placeholder="Digite sua sugestão..."></textarea>
+  <div id="inputArea" style="display:none;">
+    <textarea id="mensagem" placeholder="Digite sua sugestão..." rows="3"></textarea>
     <button onclick="enviarMensagem()">Enviar</button>
   </div>
 
-  <div id="loginArea" style="display:none;">
+  <div id="loginArea">
     <h3>Login ADM</h3>
-    <input type="text" id="admNome" placeholder="Nome do ADM"><br><br>
-    <input type="password" id="admSenha" placeholder="Senha"><br><br>
+    <input type="text" id="admNome" placeholder="Nome do ADM (gabriel, paraná, gremio)">
+    <input type="password" id="admSenha" placeholder="Senha">
+    <br>
     <button onclick="fazerLogin()">Entrar</button>
   </div>
 
   <script>
     const firebaseConfig = {
-  apiKey: "AIzaSyD8HpvX2scRrV2Yhh_V8B3QMZIRwyR8gak",
-  authDomain: "chatanonimo-d1676.firebaseapp.com",
-  databaseURL: "https://chatanonimo-d1676-default-rtdb.firebaseio.com",
-  projectId: "chatanonimo-d1676",
-  storageBucket: "chatanonimo-d1676.firebasestorage.app",
-  messagingSenderId: "951790566544",
-  appId: "1:951790566544:web:4687d205d4673be5636c15",
-  measurementId: "G-XGGHD7E1TB"
-};
+      apiKey: "AIzaSyD8HpvX2scRrV2Yhh_V8B3QMZIRwyR8gak",
+      authDomain: "chatanonimo-d1676.firebaseapp.com",
+      databaseURL: "https://chatanonimo-d1676-default-rtdb.firebaseio.com",
+      projectId: "chatanonimo-d1676",
+      storageBucket: "chatanonimo-d1676.firebasestorage.app",
+      messagingSenderId: "951790566544",
+      appId: "1:951790566544:web:4687d205d4673be5636c15",
+      measurementId: "G-XGGHD7E1TB"
+    };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+
+    // Usuários ADM válidos
+    const adms = {
+      "gabriel": "02062010",
+      "paraná": "02062010",
+      "gremio": "02062010"
+    };
 
     let nomeUsuario = "Anônimo";
     let isADM = false;
 
-    const listaPalavroes = ["caralho", "fdp", "foda", "puta", "bosta", "merda", "desgraça", "vai tomar", "cu", "pau", "vagabunda", "vsf", "pnc", "arrombado", "buceta", "piranha"];
+    const listaPalavroes = [
+      "caralho", "fdp", "foda", "puta", "bosta", "merda", "desgraça", "vaitomar",
+      "cu", "pau", "vagabunda", "vsf", "pnc", "arrombado", "buceta", "piranha",
+      // Adicione mais se quiser
+    ];
 
     function contemPalavroes(texto) {
       const normalizado = texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
@@ -147,7 +189,10 @@
 
     function enviarMensagem() {
       const msg = document.getElementById("mensagem").value.trim();
-      if (msg === "") return alert("Digite algo.");
+      if (msg === "") {
+        alert("Digite algo antes de enviar.");
+        return;
+      }
       if (contemPalavroes(msg)) {
         alert("Evite palavrões, por favor 🙏");
         return;
@@ -155,9 +200,10 @@
 
       const data = {
         texto: msg,
-        hora: new Date().toLocaleTimeString(),
+        hora: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
         adm: isADM,
-        nome: isADM ? nomeUsuario : "Anônimo"
+        nome: isADM ? nomeUsuario : "Anônimo",
+        timestamp: Date.now()
       };
 
       db.ref("mensagens").push(data);
@@ -170,48 +216,62 @@
       div.className = "msg" + (data.adm ? " adm" : "");
       div.innerHTML = `
         ${data.adm ? `<div class="adm-tag">ADM: ${data.nome}</div>` : ""}
-        ${data.texto}
+        ${escapeHTML(data.texto)}
         <div class="hora">${data.hora}</div>
       `;
       chat.appendChild(div);
       chat.scrollTop = chat.scrollHeight;
     }
 
-    db.ref("mensagens").on("child_added", snapshot => {
+    // Escapar HTML para segurança
+    function escapeHTML(str) {
+      return str.replace(/[&<>"']/g, function(m) {
+        return {'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[m];
+      });
+    }
+
+    db.ref("mensagens").orderByChild("timestamp").on("child_added", snapshot => {
       mostrarMensagem(snapshot.val());
     });
 
     function fazerLogin() {
-      const nome = document.getElementById("admNome").value.trim();
+      const nome = document.getElementById("admNome").value.trim().toLowerCase();
       const senha = document.getElementById("admSenha").value.trim();
 
-      if (senha === "senhaadm123") {
+      if (adms[nome] && adms[nome] === senha) {
         isADM = true;
-        nomeUsuario = nome || "ADM";
+        nomeUsuario = nome.charAt(0).toUpperCase() + nome.slice(1);
+        alert(`Logado como ADM: ${nomeUsuario}`);
         document.getElementById("loginArea").style.display = "none";
+        document.getElementById("inputArea").style.display = "flex";
         document.getElementById("logoutBtn").style.display = "inline-block";
-        alert("Login bem-sucedido como ADM.");
+        limparCamposLogin();
       } else {
-        alert("Senha incorreta.");
+        alert("Usuário ou senha incorretos.");
       }
+    }
+
+    function limparCamposLogin() {
+      document.getElementById("admNome").value = "";
+      document.getElementById("admSenha").value = "";
     }
 
     document.getElementById("logoutBtn").onclick = () => {
       isADM = false;
       nomeUsuario = "Anônimo";
+      alert("Você saiu do modo ADM.");
       document.getElementById("logoutBtn").style.display = "none";
-      alert("Saiu do modo ADM.");
+      document.getElementById("inputArea").style.display = "flex";
+      document.getElementById("loginArea").style.display = "block";
     };
 
-    // Perguntar nome ao entrar
+    // Ao carregar a página, mostra só login (modo anônimo ainda pode enviar mensagem)
     window.onload = () => {
-      const entrarComoAdm = confirm("Você é administrador?");
-      if (entrarComoAdm) {
-        document.getElementById("loginArea").style.display = "block";
-        document.getElementById("inputArea").style.display = "none";
-        document.getElementById("aviso").style.display = "none";
-      }
+      document.getElementById("inputArea").style.display = "flex";
+      document.getElementById("loginArea").style.display = "block";
+      document.getElementById("logoutBtn").style.display = "none";
     };
   </script>
+
 </body>
 </html>
