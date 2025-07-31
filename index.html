@@ -29,7 +29,7 @@
       flex-direction: column;
       height: 100%;
       width: 100%;
-      background: rgba(0, 0, 0, 0.5;
+      background: rgba(0, 0, 0, 0.5);
     }
     .header {
       background: linear-gradient(90deg, #075e54, #128c7e);
@@ -207,22 +207,31 @@
       carregarMensagens();
     };
     function contemPalavroes(texto) {
-      const palavras = ["idiota", "burro", "merda", "desgraça", "fdp", "viado", "bosta", "porra", "Puta", "Caralho", "Burra", "Bct", "Lazarento", "Corno", "Corna", "Sexo", "Putaria", "Puto", "Chifrudo", "Mãe", "Pai", "Pinto", "Pal", "Pênis", "Buceta", "vai se fuder", "tesao", "pelada", "xxx", "porno"];
-      const normalizado = texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/gi, "");
+      const palavras = [
+        "idiota", "burro", "merda", "desgraca", "fdp", "viado", "bosta", "porra",
+        "puta", "caralho", "burra", "bct", "lazarento", "corno", "corna", "sexo",
+        "putaria", "puto", "chifrudo", "mae", "pai", "pinto", "pal", "penis",
+        "buceta", "vai se fuder", "tesao", "pelada", "xxx", "porno"
+      ];
+      const normalizado = texto
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
       return palavras.some(p => normalizado.includes(p));
     }
     function enviarMensagem() {
       const input = document.getElementById("messageInput");
       const texto = input.value.trim();
       const confirm = document.getElementById("confirmMsg");
-      
+
       if (!texto) return;
-      
+
       if (contemPalavroes(texto)) {
         confirm.innerText = "Por favor, evite palavrões.";
         confirm.style.color = "red";
         return;
       }
+
       const remetente = isADM ? `ADM: ${nomeADM.toUpperCase()}` : nomeUsuario;
       db.ref("mensagens").push({ nome: remetente, texto, adm: isADM });
       input.value = "";
