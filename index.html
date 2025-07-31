@@ -33,11 +33,16 @@
       background-color: #e5ddd5;
     }
     .message {
-      background-color: #dcf8c6;
       margin: 10px 0;
       padding: 10px;
       border-radius: 5px;
       position: relative;
+    }
+    .message.adm {
+      background-color: #d0e7ff;
+    }
+    .message:not(.adm) {
+      background-color: #dcf8c6;
     }
     .username {
       font-weight: bold;
@@ -55,7 +60,6 @@
       cursor: pointer;
       font-size: 12px;
       padding: 2px 4px;
-      display: none;
     }
     .input-section {
       padding: 10px;
@@ -133,7 +137,7 @@
   <div class="chat-container">
     <div class="header">
       <h2>Caixa de Sugestões</h2>
-      <button class="adm-login-btn" onclick="openLogin()">Login ADM</button>
+      <button class="adm-login-btn">Login ADM</button>
     </div>
     <div id="notification" class="notification">Sua mensagem é 100% anônima e não será rastreada.</div>
     <div class="messages" id="messages"></div>
@@ -157,7 +161,13 @@
   <script>
     let nomeUsuario = "";
     let isADM = false;
+    let nomeADM = "";
     const mensagens = [];
+
+    const admCredenciais = {
+      "Gabriel": "02062010",
+      "Admin": "1234"
+    };
 
     window.onload = () => {
       const nome = prompt("Coloque seu nome (ou deixe em branco para anônimo):");
@@ -183,7 +193,8 @@
         return;
       }
 
-      mensagens.push({ nome: nomeUsuario, texto });
+      const remetente = isADM ? `ADM: ${nomeADM.toUpperCase()}` : nomeUsuario;
+      mensagens.push({ nome: remetente, texto, adm: isADM });
       input.value = "";
       confirm.innerText = "Mensagem enviada com sucesso!";
       confirm.style.color = "green";
@@ -197,6 +208,7 @@
       mensagens.forEach((msg, index) => {
         const div = document.createElement("div");
         div.className = "message";
+        if (msg.adm) div.classList.add("adm");
 
         const user = document.createElement("div");
         user.className = "username";
@@ -213,7 +225,6 @@
             mensagens.splice(index, 1);
             mostrarMensagens();
           };
-          btn.style.display = "block";
           div.appendChild(btn);
         }
 
@@ -236,15 +247,29 @@
     function loginADM() {
       const u = document.getElementById("admUser").value;
       const p = document.getElementById("admPass").value;
-      if (u === "admin" && p === "1234") {
+
+      if (admCredenciais[u] && admCredenciais[u] === p) {
         isADM = true;
-        alert("Você fez login com " + u);
+        nomeADM = u;
+        alert("Você fez login como ADM: " + nomeADM);
         closeLogin();
+        document.querySelector(".adm-login-btn").textContent = "Sair do Login ADM";
         mostrarMensagens();
       } else {
         alert("Usuário ou senha incorretos.");
       }
     }
+
+    document.querySelector(".adm-login-btn").addEventListener("click", () => {
+      if (isADM) {
+        isADM = false;
+        nomeADM = "";
+        document.querySelector(".adm-login-btn").textContent = "Login ADM";
+        mostrarMensagens();
+      } else {
+        openLogin();
+      }
+    });
   </script>
 </body>
 </html>
