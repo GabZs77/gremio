@@ -274,7 +274,7 @@
     if (e.key === "Enter") enviarMensagem();
   });
   function contemPalavroes(texto) {
-    const palavrasProibidas = ["Desgraça", "Caralho", "Filho da puta", "Vagabundo", "Desgraçado", "Desgraçada", "fdp", "pqp", "vsfd", "carai", "merda", "bosta" "mrd", "bst", "cu", "bct", "buceta" , "Buceta", "Bct", "BCT"];
+    const palavrasProibidas = ["Desgraça", "Caralho", "Filho da puta", "Vagabundo", "Desgraçado", "Desgraçada", "fdp", "pqp", "vsfd", "carai", "merda", "bosta" "mrd", "bst", "cu"];
     const textoLimpo = texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s]/g, "");
     return palavrasProibidas.some(p => textoLimpo.includes(p));
   }
