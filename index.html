@@ -3,32 +3,109 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chat de Sugestões do Grêmio</title>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
   <style>
-    body { font-family: Arial; background: #f5f5f5; margin: 0; padding: 20px; }
-    #chat { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; }
-    .msg { margin: 10px 0; padding: 10px; border-radius: 5px; background: #eaeaea; position: relative; }
-    .adm-tag { position: absolute; top: -10px; left: 10px; background: blue; color: white; padding: 2px 5px; font-size: 12px; border-radius: 3px; }
-    .msg .delete { position: absolute; top: 5px; right: 10px; color: red; cursor: pointer; }
-    #loginBox { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border: 1px solid #ccc; border-radius: 10px; }
-    #logoutBtn { display: none; margin-top: 10px; }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #e5ddd5;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }.chat-container {
+  background-color: #ffffff;
+  width: 100%;
+  max-width: 480px;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.chat-header {
+  background-color: #075E54;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.chat-messages {
+  flex-grow: 1;
+  padding: 10px;
+  overflow-y: auto;
+  background-color: #dcf8c6;
+}
+
+.message {
+  background-color: white;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  border-radius: 7px;
+  max-width: 80%;
+  position: relative;
+  word-wrap: break-word;
+}
+
+.message.adm::before {
+  content: "ADM";
+  position: absolute;
+  top: -14px;
+  left: 0;
+  background-color: #2196F3;
+  color: white;
+  font-size: 10px;
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+
+.message.admin-delete {
+  font-size: 10px;
+  color: red;
+  cursor: pointer;
+  text-align: right;
+}
+
+.chat-input {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #ccc;
+  background-color: #f0f0f0;
+}
+
+.chat-input input {
+  flex-grow: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  outline: none;
+}
+
+.chat-input button {
+  background-color: #075E54;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  margin-left: 8px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
   </style>
 </head>
 <body>
-  <div id="chat">
-    <h2>Chat de Sugestões do Grêmio</h2>
-    <div id="messages"></div>
-    <input type="text" id="msgInput" placeholder="Digite sua sugestão...">
-    <button onclick="sendMessage()">Enviar</button>
-    <button onclick="showLogin()">Login ADM</button>
-    <button id="logoutBtn" onclick="logout()">Logout</button>
-  </div>  <div id="loginBox">
-    <h3>Login de ADM</h3>
-    <input type="text" id="loginUser" placeholder="Usuário">
-    <input type="password" id="loginPass" placeholder="Senha">
-    <button onclick="login()">Entrar</button>
-  </div>  <script>
+  <div class="chat-container">
+    <div class="chat-header">Chat de Sugestões do Grêmio</div>
+    <div id="messages" class="chat-messages"></div>
+    <div class="chat-input">
+      <input type="text" id="messageInput" placeholder="Digite sua mensagem...">
+      <button onclick="sendMessage()">Enviar</button>
+    </div>
+  </div>  <!-- Firebase -->  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyD8HpvX2scRrV2Yhh_V8B3QMZIRwyR8gak",
       authDomain: "chatanonimo-d1676.firebaseapp.com",
@@ -39,94 +116,72 @@
       appId: "1:951790566544:web:4687d205d4673be5636c15",
       measurementId: "G-XGGHD7E1TB"
     };
+
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    const messagesRef = db.ref("messages");
 
-    const badWords = ["caralho", "porra", "merda", "bosta", "puta", "pqp", "fdp", "vai tomar", "vai se f", "cacete", "c*", "p*", "cu", "vsf", "vtmnc", "vtnc", "merd@", "p0rra", "carai", "caraii", "caraiii", "merdaa", "caraleo", "caraaalho", "caralh0", "c4ralho", "foda", "fodase", "f0d4", "fod@", "f0da", "fodaa", "fodasse", "viad@", "viado", "buceta", "bucet@", "bct", "btz", "f*d*-s*", "safado", "desgraca", "desgraça", "arrombado", "babaca", "corno", "corn0", "trouxa"];
-
-    const admins = {
-      "gremio": "02062010",
-      "parana": "02062010"
+    const adminUsers = {
+      "Paraná": "02062010"
     };
 
-    let currentADM = localStorage.getItem('admUser');
-    if (currentADM) {
-      document.getElementById('logoutBtn').style.display = 'inline-block';
-    }
+    let isAdmin = false;
+    let currentUser = null;
+
+    const bannedWords = ["palavrão1", "palavrão2", "caralho", "carai", "porra", "puta", "fdp", "merda", "buceta", "pqp", "cacete", "foda", "vai tomar", "vai se f", "vsf", "vtnc", "krl", "desgraca", "estrupa", "arrombado", "filho da", "fodase", "f0da", "b1r1n4", "krlho", "krlh", "caraaalho"];
 
     function filterBadWords(text) {
-      let filtered = text;
-      badWords.forEach(word => {
-        const regex = new RegExp(word, 'gi');
-        filtered = filtered.replace(regex, '*'.repeat(word.length));
-      });
-      return filtered;
+      let filtered = text.toLowerCase();
+      for (const word of bannedWords) {
+        if (filtered.includes(word)) return "[Mensagem com conteúdo inapropriado removida]";
+      }
+      return text;
     }
 
     function sendMessage() {
-      const input = document.getElementById("msgInput");
+      const input = document.getElementById("messageInput");
       let text = input.value.trim();
-      if (!text) return;
-      text = filterBadWords(text);
+      if (text === "") return;
 
-      const msgData = {
-        text,
-        isADM: currentADM ? true : false,
-        from: currentADM || "anon"
-      };
+      const content = filterBadWords(text);
 
-      db.ref("messages").push(msgData);
+      messagesRef.push({
+        text: content,
+        timestamp: Date.now(),
+        user: currentUser || "Anônimo",
+        isAdmin: isAdmin
+      });
       input.value = "";
     }
 
-    db.ref("messages").on("value", snapshot => {
-      const messagesDiv = document.getElementById("messages");
-      messagesDiv.innerHTML = "";
-      const data = snapshot.val();
-      for (let id in data) {
-        const msg = data[id];
-        const div = document.createElement("div");
-        div.className = "msg";
-        if (msg.isADM) {
-          const tag = document.createElement("div");
-          tag.className = "adm-tag";
-          tag.innerText = "ADM";
-          div.appendChild(tag);
-        }
-        div.innerHTML += `<strong>${msg.from}:</strong> ${msg.text}`;
-        if (currentADM) {
-          const del = document.createElement("span");
-          del.className = "delete";
-          del.innerText = "✖";
-          del.onclick = () => db.ref("messages/" + id).remove();
-          div.appendChild(del);
-        }
-        messagesDiv.appendChild(div);
+    messagesRef.on("child_added", (snapshot) => {
+      const message = snapshot.val();
+      const msgEl = document.createElement("div");
+      msgEl.classList.add("message");
+      if (message.isAdmin) msgEl.classList.add("adm");
+      msgEl.textContent = message.text;
+
+      if (isAdmin) {
+        const delBtn = document.createElement("div");
+        delBtn.classList.add("admin-delete");
+        delBtn.textContent = "Apagar";
+        delBtn.onclick = () => snapshot.ref.remove();
+        msgEl.appendChild(delBtn);
       }
+
+      document.getElementById("messages").appendChild(msgEl);
     });
 
-    function showLogin() {
-      document.getElementById("loginBox").style.display = 'block';
-    }
+    // Admin login
+    window.onload = () => {
+      const nome = prompt("Seu nome (Deixe em branco para anônimo):");
+      const senha = nome && adminUsers[nome] ? prompt("Senha do ADM:") : null;
 
-    function login() {
-      const user = document.getElementById("loginUser").value.trim().toLowerCase();
-      const pass = document.getElementById("loginPass").value;
-      if (admins[user] && admins[user] === pass) {
-        localStorage.setItem('admUser', user);
-        currentADM = user;
-        document.getElementById("loginBox").style.display = 'none';
-        document.getElementById('logoutBtn').style.display = 'inline-block';
-        alert("Logado como ADM: " + user);
-      } else {
-        alert("Usuário ou senha incorretos.");
+      if (nome && senha && adminUsers[nome] === senha) {
+        isAdmin = true;
+        currentUser = nome;
+        alert("Logado como ADM!");
       }
-    }
-
-    function logout() {
-      localStorage.removeItem('admUser');
-      currentADM = null;
-      document.getElementById('logoutBtn').style.display = 'none';
-    }
+    };
   </script></body>
 </html>
