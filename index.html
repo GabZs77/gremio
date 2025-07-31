@@ -177,7 +177,6 @@
   </style>
 </head>
 <body>
-
 <div class="chat-container">
   <div class="header">
     Grêmio Força Jovem - E.E. Sebastião Vilaça
@@ -192,7 +191,6 @@
     <button id="sendBtn">Enviar</button>
   </div>
 </div>
-
 <div id="modalOverlay"></div>
 <div id="loginModal">
   <button id="closeModalBtn">×</button>
@@ -201,10 +199,8 @@
   <input id="admPass" type="password" placeholder="Senha" />
   <button id="admLoginBtn">Entrar</button>
 </div>
-
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyD8HpvX2scRrV2Yhh_V8B3QMZIRwyR8gak",
@@ -215,13 +211,11 @@
     messagingSenderId: "951790566544",
     appId: "1:951790566544:web:4687d205d4673be5636c15"
   };
-
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
   const adms = { "Paraná": "02062010", "Gabriel": "02062010" };
   let loggedADMs = [];
   let userName = "";
-
   // Solicita nome
   window.onload = () => {
     setTimeout(() => {
@@ -229,7 +223,6 @@
       userName = nome && nome.trim() !== "" ? nome.trim() : "Anônimo";
     }, 200);
   };
-
   const messagesDiv = document.getElementById("messages");
   const messageInput = document.getElementById("messageInput");
   const sendBtn = document.getElementById("sendBtn");
@@ -241,7 +234,6 @@
   const admUserInput = document.getElementById("admUser");
   const admPassInput = document.getElementById("admPass");
   const admLoginBtn = document.getElementById("admLoginBtn");
-
   loginAdmBtn.onclick = () => {
     loginModal.style.display = "block";
     modalOverlay.style.display = "block";
@@ -252,7 +244,6 @@
     admUserInput.value = "";
     admPassInput.value = "";
   };
-
   admLoginBtn.onclick = () => {
     const user = admUserInput.value.trim();
     const pass = admPassInput.value;
@@ -266,30 +257,25 @@
       alert("Usuário ou senha incorretos.");
     }
   };
-
   logoutAdmBtn.onclick = () => {
     loggedADMs = loggedADMs.filter(adm => adm !== userName);
     userName = "Anônimo";
     updateAdminButtons();
     alert("Você saiu do modo ADM.");
   };
-
   function updateAdminButtons() {
     loginAdmBtn.style.display = loggedADMs.length > 0 ? "none" : "inline-block";
     logoutAdmBtn.style.display = loggedADMs.length > 0 ? "inline-block" : "none";
   }
-
   sendBtn.onclick = enviarMensagem;
   messageInput.addEventListener("keydown", e => {
     if (e.key === "Enter") enviarMensagem();
   });
-
   function contemPalavroes(texto) {
     const palavrasProibidas = ["palavrão1", "palavrão2", "fdp", "pqp", "vsfd", "carai", "merda", "bosta"];
     const textoLimpo = texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s]/g, "");
     return palavrasProibidas.some(p => textoLimpo.includes(p));
   }
-
   function enviarMensagem() {
     const texto = messageInput.value.trim();
     if (!texto) return;
@@ -307,46 +293,43 @@
     });
     messageInput.value = "";
   }
-
   db.ref("mensagens").orderByChild("timestamp").on("value", snapshot => {
     messagesDiv.innerHTML = "";
     snapshot.forEach(child => {
       const msg = child.val();
       const key = child.key;
-
       const div = document.createElement("div");
       div.className = "message";
       if (msg.adm) div.classList.add("adm");
-
       if (msg.adm) {
         const tag = document.createElement("div");
         tag.className = "adm-tag";
         tag.textContent = "ADM";
         div.appendChild(tag);
       }
-
       div.innerHTML += `<strong>${escapeHTML(msg.nome)}</strong>: ${escapeHTML(msg.texto)}`;
       div.innerHTML += `<span class="time">${msg.horario}</span>`;
-
-      const delBtn = document.createElement("button");
-      delBtn.className = "delete-btn";
-      delBtn.textContent = "Apagar";
-      delBtn.onclick = () => {
-        if (confirm("Quer mesmo apagar essa mensagem?")) {
-          db.ref("mensagens/" + key).remove();
-        }
-      };
-      div.appendChild(delBtn);
-
+      
+      // Mostra o botão de apagar apenas para administradores
+      if (loggedADMs.includes(userName) && msg.nome !== userName) {
+        const delBtn = document.createElement("button");
+        delBtn.className = "delete-btn";
+        delBtn.textContent = "Apagar";
+        delBtn.onclick = () => {
+          if (confirm("Quer mesmo apagar essa mensagem?")) {
+            db.ref("mensagens/" + key).remove();
+          }
+        };
+        div.appendChild(delBtn);
+      }
+      
       messagesDiv.appendChild(div);
     });
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   });
-
   function escapeHTML(str) {
     return str.replace(/[&<>"']/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[m]));
   }
 </script>
-
 </body>
 </html>
