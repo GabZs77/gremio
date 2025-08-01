@@ -4,136 +4,93 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Caixa de Sugestões da Escola</title>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      font-family:Arial, sans-serif;
-      background:url('https://i.postimg.cc/ZnrsPtxB/IMG-20250731-WA0682.jpg') no-repeat center center fixed;
-      background-size:cover;
-      color:white;
-      min-height:100vh;
-      display:flex;
-      justify-content:center;
-      align-items:center;
+      font-family: Arial, sans-serif;
+      background: url('LINK_DA_SUA_IMAGEM') no-repeat center center fixed;
+      background-size: cover;
     }
-    .chat-container {
-      width:100%; max-width:600px;
-      background:rgba(0,0,0,0.4);
-      backdrop-filter:blur(6px);
-      border-radius:10px;
-      overflow:hidden;
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+      background-color: rgba(255, 255, 255, 0.0); /* fundo totalmente transparente */
     }
-    .header {
-      padding:15px;
-      background:linear-gradient(90deg,#075e54,#128c7e);
-      display:flex; justify-content:space-between; align-items:center;
+
+    .chat-box {
+      background-color: rgba(255, 255, 255, 0.8);
+      border-radius: 10px;
+      padding: 10px;
+      height: 400px;
+      overflow-y: auto;
+      margin-bottom: 10px;
     }
-    .header h2{margin:0;font-size:20px;}
-    .header button{
-      background:#25d366;color:white;border:none;padding:8px 12px;
-      border-radius:4px;cursor:pointer;
-    }
-    .messages {
-      padding:10px;
-      max-height:400px;
-      overflow-y:auto;
-      background:rgba(255,255,255,0.1);
-    }
+
     .message {
-      position:relative;
-      margin-bottom:8px;
-      padding:8px 12px;
-      border-radius:6px;
-      background:#dcf8c6;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      background-color: #f0f0f0;
+      color: black;
     }
-    .message.adm {
-      background:#cce5ff;
+
+    .adm {
+      background-color: #cce5ff;
+      border-left: 4px solid #007bff;
     }
-    .username {
-      font-weight:bold;
-      margin-bottom:4px;
+
+    .adm::before {
+      content: "[ADM] ";
+      font-weight: bold;
+      color: #007bff;
     }
-    .tag-adm {
-      display:inline-block;
-      padding:2px 6px;
-      background:#128c7e;
-      color:white;
-      font-size:12px;
-      border-radius:4px;
-      margin-right:6px;
+
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
     }
-    .delete-btn {
-      position:absolute; top:6px; right:6px;
-      background:red;color:white;border:none;border-radius:4px;
-      font-size:12px;cursor:pointer;
+
+    input, button {
+      padding: 8px;
+      border-radius: 5px;
+      border: none;
+      font-size: 16px;
     }
-    .input-area {
-      padding:10px;
-      background:#f0f0f0;
+
+    input {
+      flex: 1;
     }
-    textarea {
-      width:100%; padding:8px; font-size:14px;
-      border-radius:6px; border:1px solid #ccc;
-      resize:none; height:80px;
-    }
-    .send-btn {
-      width:100%; margin-top:8px; padding:10px;
-      background:#25d366;color:white; border:none; border-radius:6px;
-      font-size:16px; cursor:pointer;
-    }
-    .send-btn:hover{background:#1ebe5d;}
-    .notification {
-      text-align:center; padding:6px;
-      background:#cce5ff; color:#004085; font-size:14px;
-    }
-    .login-modal {
-      position:fixed; inset:0; background:rgba(0,0,0,0.5);
-      display:none; align-items:center; justify-content:center;
-    }
+
     .login-box {
-      background:white;color:black; padding:20px;
-      border-radius:8px; width:280px; position:relative;
-    }
-    .login-box input {
-      width:100%; padding:8px; margin:6px 0;border:1px solid #ccc;border-radius:4px;
-    }
-    .login-box button {
-      width:100%; padding:8px;background:#128c7e;color:white;
-      border:none; border-radius:4px; cursor:pointer;
-    }
-    .close-login {
-      position:absolute; top:6px; right:10px; cursor:pointer; color:red;
-    }
-    .confirm-msg {
-      margin-top:6px; text-align:center; color:green;
+      display: flex;
+      gap: 5px;
+      margin-bottom: 10px;
     }
   </style>
 </head>
 <body>
-  <div class="chat-container">
-    <div class="header">
-      <h2>Caixa de Sugestões da Escola</h2>
-      <button id="loginBtn" onclick="alternarLogin()">Login ADM</button>
-    </div>
-    <div id="notification" class="notification"></div>
-    <div class="messages" id="messages"></div>
-    <div class="input-area">
-      <textarea id="messageInput" placeholder="Digite sua sugestão..."></textarea>
-      <button class="send-btn" onclick="enviarMensagem()">Enviar Sugestão</button>
-      <div id="confirmMsg" class="confirm-msg"></div>
-    </div>
-  </div>
-
-  <div class="login-modal" id="loginModal">
+  <div class="container">
+    <h2>📬 Caixa de Sugestões da Escola</h2>
     <div class="login-box">
-      <span class="close-login" onclick="fecharLogin()">❌</span>
-      <h3>Login ADM</h3>
-      <input type="text" id="admUser" placeholder="Usuário ADM">
-      <input type="password" id="admPass" placeholder="Senha">
-      <button onclick="loginADM()">Entrar</button>
+      <input type="text" id="admName" placeholder="Nome do ADM" />
+      <input type="password" id="admPassword" placeholder="Senha" />
+      <button onclick="loginADM()" id="loginBtn">Login ADM</button>
     </div>
+    <div class="input-group">
+      <input type="text" id="messageInput" placeholder="Digite sua sugestão..." />
+      <button onclick="sendMessage()">Enviar</button>
+    </div>
+    <div class="chat-box" id="chatBox"></div>
+    <button onclick="clearMessages()" id="clearBtn" style="display:none;">🗑️ Apagar</button>
   </div>
 
   <script>
@@ -144,80 +101,87 @@
       projectId: "chatanonimo-d1676",
       storageBucket: "chatanonimo-d1676.appspot.com",
       messagingSenderId: "951790566544",
-      appId: "1:951790566544:web:4687d205d4673be5636c15",
-      measurementId: "G-XGGHD7E1TB"
+      appId: "1:951790566544:web:4687d205d4673be5636c15"
     };
     firebase.initializeApp(firebaseConfig);
+
     const db = firebase.database();
+    const chatRef = db.ref("chat");
 
-    let isADM=false, nomeADM="";
-    const admCredenciais={"Gabriel":"02062010","Parana":"02062010","Gremio":"GremioEstudantilADM"};
-
-    function aplicarModoEscuroAutomatico(){ /* opcional */ }
-    window.onload=()=>{
-      const nome=prompt("Seu nome (ou Anônimo):");
-      window.nomeUsuario=nome||"Anônimo";
-      document.getElementById("notification").textContent = `Olá ${window.nomeUsuario}!`;
-      carregarMensagens();
+    const admList = {
+      "Gabriel": "02062010",
+      "Lucas": "1234",
+      "Maria": "senha123"
     };
 
-    function contemPalavroes(texto){ /* mesma função de antes */ 
-      const palavras=["idiota","burro","merda","desgraca","fdp","viado","bosta","porra","puta","caralho","burra","bct","lazarento","corno","corna","sexo","putaria","puto","chifrudo","pinto","penis","buceta","vaisefuder","tesao","pelada","xxx","porno"];
-      const normalizado=texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]/gi,"");
-      return palavras.some(p=>normalizado.includes(p));
+    let currentADM = null;
+
+    function loginADM() {
+      const name = document.getElementById("admName").value.trim();
+      const password = document.getElementById("admPassword").value.trim();
+
+      if (admList[name] && admList[name] === password) {
+        currentADM = name;
+        alert("Você logou como ADM: " + name);
+        document.getElementById("loginBtn").innerText = "Sair do Login ADM";
+        document.getElementById("clearBtn").style.display = "inline-block";
+      } else if (currentADM) {
+        currentADM = null;
+        document.getElementById("loginBtn").innerText = "Login ADM";
+        document.getElementById("clearBtn").style.display = "none";
+        alert("Logout efetuado!");
+      } else {
+        alert("Login inválido!");
+      }
+
+      document.getElementById("admName").value = "";
+      document.getElementById("admPassword").value = "";
     }
 
-    function enviarMensagem(){
-      const t=document.getElementById("messageInput").value.trim();
-      const c=document.getElementById("confirmMsg");
-      if(!t)return;
-      if(contemPalavroes(t)){c.innerText="Evite palavrões.";c.style.color="red";return;}
-      const remet=isADM?`ADM: ${nomeADM.toUpperCase()}`:window.nomeUsuario;
-      db.ref("mensagens").push({nome:remet,texto:t,adm:isADM});
-      document.getElementById("messageInput").value="";
-      c.innerText="Enviado com sucesso!";c.style.color="lightgreen";
-    }
+    function sendMessage() {
+      const input = document.getElementById("messageInput");
+      const text = input.value.trim();
+      if (text === "") return;
 
-    function carregarMensagens(){
-      db.ref("mensagens").on("value",snap=>{
-        const m=document.getElementById("messages"); m.innerHTML="";
-        const data=snap.val()||{};
-        Object.entries(data).forEach(([id,msg])=>{
-          const d=document.createElement("div"); d.className="message"+(msg.adm?" adm":"");
-          const name=document.createElement("div"); name.className="username";
-          if(msg.adm){
-            const tag=document.createElement("span");tag.className="tag-adm";tag.innerText="ADM";
-            name.appendChild(tag);
-          }
-          name.appendChild(document.createTextNode(msg.nome));
-          const txt=document.createElement("div"); txt.innerText=msg.texto;
-          d.appendChild(name); d.appendChild(txt);
-          if(isADM){const btn=document.createElement("button");btn.className="delete-btn";btn.innerText="🗑️";btn.onclick=()=>db.ref("mensagens/"+id).remove();d.appendChild(btn);}
-          m.appendChild(d);
-        });
-        m.scrollTop=m.scrollHeight;
+      chatRef.push({
+        text: text,
+        adm: currentADM || null,
+        timestamp: Date.now()
       });
+
+      input.value = "";
     }
 
-    function alternarLogin(){ isADM?logoutADM():abrirLogin(); }
-    function abrirLogin(){ document.getElementById("loginModal").style.display="flex"; }
-    function fecharLogin(){ document.getElementById("loginModal").style.display="none"; }
-
-    function loginADM(){
-      const u=document.getElementById("admUser").value.trim(), p=document.getElementById("admPass").value.trim();
-      if(admCredenciais[u]===p){
-        isADM=true; nomeADM=u;
-        fecharLogin();
-        document.getElementById("loginBtn").innerText="Sair do Login ADM";
-        carregarMensagens();
-      } else alert("Credenciais inválidas.");
+    function clearMessages() {
+      if (currentADM) {
+        chatRef.remove();
+      }
     }
 
-    function logoutADM(){
-      isADM=false; nomeADM="";
-      document.getElementById("loginBtn").innerText="Login ADM";
-      carregarMensagens();
-    }
+    chatRef.on("value", (snapshot) => {
+      const chatBox = document.getElementById("chatBox");
+      chatBox.innerHTML = "";
+
+      snapshot.forEach((childSnapshot) => {
+        const data = childSnapshot.val();
+        const div = document.createElement("div");
+        div.className = "message";
+
+        if (data.adm) {
+          div.classList.add("adm");
+          div.innerHTML = `<strong>ADM: ${data.adm.toUpperCase()}</strong><br>${data.text}`;
+        } else {
+          div.innerText = data.text;
+        }
+
+        chatBox.appendChild(div);
+      });
+
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
   </script>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 </body>
 </html>
